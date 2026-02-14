@@ -27,14 +27,19 @@ export class GoogleSheetsService {
    * Obtiene datos de una hoja de cálculo pública de Google Sheets
    * Usa la API pública que no requiere autenticación para hojas públicas
    */
-  async getSheetData(range: string = "A1:Z1000"): Promise<string[][]> {
+  async getSheetData(range: string = "A1:Z1000", sheet?: string): Promise<string[][]> {
     if (!this.enabled) {
       return [];
     }
 
     try {
       // URL para acceder a Google Sheets como CSV público
-      const url = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?tqx=out:csv&range=${encodeURIComponent(range)}`;
+      let url = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?tqx=out:csv&range=${encodeURIComponent(range)}`;
+      
+      // Agregar nombre de pestaña si se especifica
+      if (sheet) {
+        url = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}&range=${encodeURIComponent(range)}`;
+      }
 
       const response = await axios.get(url, {
         timeout: 10000,
@@ -100,8 +105,10 @@ export class GoogleSheetsService {
   }
 
   /**
-   * Calcula ingresos basándose en la estructura de la hoja
-   * Esta función debe adaptarse a la estructura específica de la hoja de Cristina
+   * Calcula ingresos basándose en la pestaña "pagos" columna E (importe)
+   * - currentIncome: suma total de la columna E (todos los pagos registrados)
+   * - pendingIncome: 0 por ahora (requiere lógica adicional)
+   * - projectedIncome: 0 por ahora (requiere lógica adicional)
    */
   async calculateIncome(): Promise<{
     currentIncome: number;
@@ -109,7 +116,8 @@ export class GoogleSheetsService {
     projectedIncome: number;
   }> {
     try {
-      const data = await this.getSheetData();
+      // Obtener datos de la pestaña "pagos"
+      const data = await this.getSheetData("A1:F10000", "pagos");
 
       if (data.length === 0) {
         return {
@@ -119,27 +127,22 @@ export class GoogleSheetsService {
         };
       }
 
-      // TODO: Adaptar esta lógica a la estructura real de la hoja de Cristina
-      // Por ahora, retornamos valores de ejemplo
-      // Necesitaremos saber:
-      // - En qué columnas están los datos de ingresos
-      // - Cómo identificar ingresos actuales vs pendientes vs proyectados
-      // - Si hay alguna fórmula o cálculo específico
-
       let currentIncome = 0;
-      let pendingIncome = 0;
-      let projectedIncome = 0;
 
-      // Ejemplo: sumar valores de columnas específicas
-      // Esto debe ajustarse según la estructura real
+      // Sumar todos los valores de la columna E (importe)
+      // La columna E es el índice 4 (0-indexed: A=0, B=1, C=2, D=3, E=4)
       for (let i = 1; i < data.length; i++) {
         const row = data[i];
-        if (row.length >= 3) {
-          currentIncome += this.extractNumber(row[0] || "0");
-          pendingIncome += this.extractNumber(row[1] || "0");
-          projectedIncome += this.extractNumber(row[2] || "0");
+        if (row.length >= 5) {
+          const importe = this.extractNumber(row[4] || "0");
+          currentIncome += importe;
         }
       }
+
+      // TODO: Implementar lógica para pendientes y previstos
+      // Por ahora retornamos 0
+      const pendingIncome = 0;
+      const projectedIncome = 0;
 
       return {
         currentIncome,

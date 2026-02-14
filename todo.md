@@ -57,3 +57,7 @@
 - [x] Escribir tests para procedimientos tRPC
 - [ ] Realizar pruebas de UI en diferentes dispositivos
 - [x] Validar manejo de errores y estados edge case
+
+## Ajustes Pendientes
+- [x] Ajustar integración de Google Sheets para leer pestaña "pagos" columna E
+- [ ] Definir lógica para "Pendientes por cobrar" y "Ingresos previstos"
