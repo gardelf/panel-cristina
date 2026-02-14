@@ -15,6 +15,20 @@
       "when": 1771074818367,
       "tag": "0001_outstanding_ultron",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1771087330066,
+      "tag": "0002_red_energizer",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1771088147427,
+      "tag": "0003_nifty_chamber",
+      "breakpoints": true
     }
   ]
 }

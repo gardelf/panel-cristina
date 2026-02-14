@@ -1,0 +1,8 @@
+{
+  "query": "CREATE TABLE `agenda` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`data` text NOT NULL,\n\t`uploadedAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `agenda_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user UZtdrFd36x5de9Y.9019169b5b86 --database QcguDgDoPx2bifANXSGd27 --execute CREATE TABLE `agenda` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`data` text NOT NULL,\n\t`uploadedAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `agenda_id` PRIMARY KEY(`id`)\n);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1050 (42S01) at line 1: Table 'QcguDgDoPx2bifANXSGd27.agenda' already exists"
+  ]
+}

@@ -101,3 +101,6 @@
 
 ## Bugs a Corregir
 - [x] Corregir error en CalendarWidget que causa crash
+
+## Mejoras al Calendario
+- [x] Mostrar estructura de horarios completa de 8:00 a 21:00 aunque no haya clases
