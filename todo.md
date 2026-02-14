@@ -62,3 +62,9 @@
 - [x] Ajustar integración de Google Sheets para leer pestaña "pagos" columna E
 - [x] Implementar cálculo de pendientes: (columna W pestaña clientes) - (columna E pestaña pagos)
 - [x] Implementar cálculo de previstos: suma columna W pestaña clientes
+
+## Integración Widget de Clases Vacías
+- [x] Crear servidor Express local para exponer datos de clases
+- [x] Implementar endpoint GET /api/clases-vacias
+- [x] Actualizar widget de clases para consumir API local
+- [x] Documentar instalación y uso del servidor local
