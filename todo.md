@@ -60,4 +60,5 @@
 
 ## Ajustes Pendientes
 - [x] Ajustar integración de Google Sheets para leer pestaña "pagos" columna E
-- [ ] Definir lógica para "Pendientes por cobrar" y "Ingresos previstos"
+- [x] Implementar cálculo de pendientes: (columna W pestaña clientes) - (columna E pestaña pagos)
+- [x] Implementar cálculo de previstos: suma columna W pestaña clientes

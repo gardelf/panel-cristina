@@ -105,10 +105,10 @@ export class GoogleSheetsService {
   }
 
   /**
-   * Calcula ingresos basándose en la pestaña "pagos" columna E (importe)
-   * - currentIncome: suma total de la columna E (todos los pagos registrados)
-   * - pendingIncome: 0 por ahora (requiere lógica adicional)
-   * - projectedIncome: 0 por ahora (requiere lógica adicional)
+   * Calcula ingresos basándose en las pestañas "pagos" y "clientes"
+   * - currentIncome: suma de columna E en "pagos" (pagos ya recibidos)
+   * - projectedIncome: suma de columna W en "clientes" (total esperado)
+   * - pendingIncome: projectedIncome - currentIncome (pendiente de cobro)
    */
   async calculateIncome(): Promise<{
     currentIncome: number;
@@ -116,37 +116,41 @@ export class GoogleSheetsService {
     projectedIncome: number;
   }> {
     try {
-      // Obtener datos de la pestaña "pagos"
-      const data = await this.getSheetData("A1:F10000", "pagos");
-
-      if (data.length === 0) {
-        return {
-          currentIncome: 0,
-          pendingIncome: 0,
-          projectedIncome: 0,
-        };
-      }
+      // Obtener datos de pagos (columna E)
+      const pagosData = await this.getSheetData("A1:F10000", "pagos");
+      
+      // Obtener datos de clientes (columna W - importe)
+      const clientesData = await this.getSheetData("A1:W10000", "clientes");
 
       let currentIncome = 0;
+      let projectedIncome = 0;
 
-      // Sumar todos los valores de la columna E (importe)
+      // Sumar todos los pagos ya recibidos (columna E en "pagos")
       // La columna E es el índice 4 (0-indexed: A=0, B=1, C=2, D=3, E=4)
-      for (let i = 1; i < data.length; i++) {
-        const row = data[i];
+      for (let i = 1; i < pagosData.length; i++) {
+        const row = pagosData[i];
         if (row.length >= 5) {
           const importe = this.extractNumber(row[4] || "0");
           currentIncome += importe;
         }
       }
 
-      // TODO: Implementar lógica para pendientes y previstos
-      // Por ahora retornamos 0
-      const pendingIncome = 0;
-      const projectedIncome = 0;
+      // Sumar todos los importes esperados (columna W en "clientes")
+      // La columna W es el índice 22 (0-indexed: A=0...W=22)
+      for (let i = 1; i < clientesData.length; i++) {
+        const row = clientesData[i];
+        if (row.length >= 23) {
+          const importe = this.extractNumber(row[22] || "0");
+          projectedIncome += importe;
+        }
+      }
+
+      // Calcular pendientes: lo que se espera cobrar menos lo ya cobrado
+      const pendingIncome = projectedIncome - currentIncome;
 
       return {
         currentIncome,
-        pendingIncome,
+        pendingIncome: Math.max(0, pendingIncome), // Asegurar que no sea negativo
         projectedIncome,
       };
     } catch (error) {
