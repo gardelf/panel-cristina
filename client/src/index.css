@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -43,16 +44,16 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
+  --primary: oklch(0.623 0.214 259.815);
+  --primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.623 0.214 259.815);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --chart-1: oklch(0.623 0.214 259.815);
+  --chart-2: oklch(0.552 0.177 180);
+  --chart-3: oklch(0.488 0.15 200);
+  --chart-4: oklch(0.7 0.15 80);
+  --chart-5: oklch(0.65 0.18 40);
+  --radius: 0.75rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.235 0.015 65);
   --card: oklch(1 0 0);
@@ -119,6 +120,29 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  }
+  h1 {
+    @apply text-4xl font-bold tracking-tight;
+  }
+  h2 {
+    @apply text-3xl font-semibold tracking-tight;
+  }
+  h3 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+  h4 {
+    @apply text-xl font-semibold;
+  }
+  h5 {
+    @apply text-lg font-semibold;
+  }
+  h6 {
+    @apply text-base font-semibold;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -158,6 +182,22 @@
   .flex {
     min-height: 0;
     min-width: 0;
+  }
+
+  .widget-card {
+    @apply bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+
+  .glass-effect {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20;
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, oklch(0.623 0.214 259.815) 0%, oklch(0.523 0.214 259.815) 100%);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, oklch(0.552 0.177 180) 0%, oklch(0.488 0.15 200) 100%);
   }
 
   @media (min-width: 640px) {
