@@ -53,21 +53,28 @@ export const appRouter = router({
   agenda: router({
     // Endpoint para recibir agenda.json desde Playwright
     upload: publicProcedure
-      .input(
-        z.object({
-          data: z.any(), // JSON completo de agenda
-        })
-      )
+      .input(z.any()) // Aceptar cualquier JSON
       .mutation(async ({ input }) => {
         try {
+          console.log('[Agenda] Recibiendo datos:', typeof input, Array.isArray(input));
+          
           const db = await getDb();
           if (!db) {
             throw new Error("Base de datos no disponible");
           }
 
+          // Validar que input no sea undefined o null
+          if (!input) {
+            throw new Error("No se recibieron datos");
+          }
+
+          // Convertir a JSON string
+          const dataStr = JSON.stringify(input);
+          console.log('[Agenda] Guardando', dataStr.length, 'caracteres');
+
           // Guardar en base de datos
           await db.insert(agenda).values({
-            data: JSON.stringify(input.data),
+            data: dataStr,
           });
 
           return {
