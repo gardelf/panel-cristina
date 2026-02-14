@@ -68,3 +68,8 @@
 - [x] Implementar endpoint GET /api/clases-vacias
 - [x] Actualizar widget de clases para consumir API local
 - [x] Documentar instalación y uso del servidor local
+
+## Widget de Clases con Iframe
+- [x] Modificar ClassesWidget para mostrar iframe de localhost:3000
+- [x] Hacer iframe completamente interactivo
+- [x] Ajustar tamaño y diseño del iframe
