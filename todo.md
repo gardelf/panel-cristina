@@ -117,3 +117,6 @@
 
 ## Mejoras FullCalendar
 - [x] Calendario debe mostrar automáticamente la semana que tiene clases (no la semana actual)
+
+## Mejoras Visuales Calendario
+- [x] Hacer más visibles las líneas de separación entre horas en el calendario
