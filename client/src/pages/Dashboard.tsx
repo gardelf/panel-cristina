@@ -3,6 +3,7 @@ import { Widget } from "@/components/Widget";
 import { ExpensesWidget } from "@/components/ExpensesWidget";
 import { IncomeWidget } from "@/components/IncomeWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
+import { ClassesWidget } from "@/components/ClassesWidget";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
 import { 
@@ -74,6 +75,9 @@ export default function Dashboard() {
 
           {/* Widget de Calendario de Clases */}
           <CalendarWidget />
+
+          {/* Widget de Sistema de Gestión (iframe) */}
+          <ClassesWidget />
         </div>
       </main>
     </div>

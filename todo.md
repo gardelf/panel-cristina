@@ -95,3 +95,6 @@
 - [x] Crear procedimiento tRPC para obtener datos de agenda
 - [x] Crear widget de calendario que muestre clases por hora
 - [x] Proporcionar código para modificar script de Playwright y subir datos automáticamente
+
+## Restaurar Widget con Iframe
+- [x] Agregar ClassesWidget (iframe localhost:3000) junto al CalendarWidget
