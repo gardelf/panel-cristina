@@ -24,6 +24,18 @@ export function CalendarWidget() {
     refetch();
   };
 
+  // Calcular fecha inicial (primera clase disponible)
+  const initialDate = useMemo(() => {
+    if (!data?.hasData || !data.data || !Array.isArray(data.data)) {
+      return undefined;
+    }
+    const clases = data.data as Array<{ fecha: string }>;
+    if (clases.length === 0) return undefined;
+    // Ordenar por fecha y tomar la primera
+    const fechas = clases.map(c => c.fecha).sort();
+    return fechas[0];
+  }, [data]);
+
   // Convertir datos de agenda a eventos de FullCalendar
   const events = useMemo(() => {
     if (!data?.hasData || !data.data || !Array.isArray(data.data)) {
@@ -135,6 +147,7 @@ export function CalendarWidget() {
                   key={refreshKey}
                   plugins={[timeGridPlugin, interactionPlugin]}
                   initialView="timeGridWeek"
+                  initialDate={initialDate}
                   locale={esLocale}
                   headerToolbar={{
                     left: 'prev,next today',

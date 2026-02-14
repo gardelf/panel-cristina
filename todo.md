@@ -114,3 +114,6 @@
 - [x] Integrar datos de agenda con formato de eventos
 - [x] Configurar vista semanal de 8:00 a 21:00
 - [x] Agregar colores según disponibilidad de plazas
+
+## Mejoras FullCalendar
+- [x] Calendario debe mostrar automáticamente la semana que tiene clases (no la semana actual)
