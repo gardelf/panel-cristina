@@ -35,6 +35,41 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // REST endpoint para subir agenda (fuera de tRPC para simplicidad)
+  app.post("/api/agenda/upload", async (req, res) => {
+    try {
+      const { getDb } = await import("../db");
+      const { agenda } = await import("../../drizzle/schema");
+      
+      const agendaData = req.body;
+      
+      if (!agendaData || (Array.isArray(agendaData) && agendaData.length === 0)) {
+        return res.status(400).json({ error: "No se recibieron datos" });
+      }
+      
+      const db = await getDb();
+      if (!db) {
+        return res.status(500).json({ error: "Base de datos no disponible" });
+      }
+      
+      await db.insert(agenda).values({
+        data: JSON.stringify(agendaData),
+      });
+      
+      console.log(`[Agenda] Subida exitosa: ${Array.isArray(agendaData) ? agendaData.length : 'N/A'} clases`);
+      
+      res.json({
+        success: true,
+        message: "Agenda subida correctamente",
+        count: Array.isArray(agendaData) ? agendaData.length : null,
+      });
+    } catch (error: any) {
+      console.error("[Agenda] Error al subir:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",

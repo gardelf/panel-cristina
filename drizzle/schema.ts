@@ -25,4 +25,17 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Tabla para almacenar datos de agenda de clases
+ * Recibe datos desde el script de Playwright local
+ */
+export const agenda = mysqlTable("agenda", {
+  id: int("id").autoincrement().primaryKey(),
+  /** JSON completo del archivo agenda.json */
+  data: text("data").notNull(),
+  /** Timestamp de cuando se subió */
+  uploadedAt: timestamp("uploadedAt").defaultNow().notNull(),
+});
+
+export type Agenda = typeof agenda.$inferSelect;
+export type InsertAgenda = typeof agenda.$inferInsert;
