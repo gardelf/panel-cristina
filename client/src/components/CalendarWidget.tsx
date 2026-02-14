@@ -21,7 +21,7 @@ export function CalendarWidget() {
   };
 
   // Agrupar clases por fecha
-  const clasesPorFecha = data?.hasData && Array.isArray(data.data)
+  const clasesPorFecha = data?.hasData && data.data && Array.isArray(data.data)
     ? (data.data as Array<{
         fecha: string;
         hora: string;

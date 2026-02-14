@@ -98,3 +98,6 @@
 
 ## Restaurar Widget con Iframe
 - [x] Agregar ClassesWidget (iframe localhost:3000) junto al CalendarWidget
+
+## Bugs a Corregir
+- [x] Corregir error en CalendarWidget que causa crash
