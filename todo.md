@@ -104,3 +104,13 @@
 
 ## Mejoras al Calendario
 - [x] Mostrar estructura de horarios completa de 8:00 a 21:00 aunque no haya clases
+
+## Bugs Urgentes
+- [x] Las clases no se muestran en el calendario (problema de coincidencia de fechas/horas)
+
+## Implementar FullCalendar
+- [x] Instalar librerías de FullCalendar
+- [x] Crear nuevo componente CalendarWidget con FullCalendar
+- [x] Integrar datos de agenda con formato de eventos
+- [x] Configurar vista semanal de 8:00 a 21:00
+- [x] Agregar colores según disponibilidad de plazas

@@ -1,18 +1,12 @@
 import { Widget } from "@/components/Widget";
-import { Calendar, RefreshCw, Clock, Users } from "lucide-react";
+import { Calendar, Clock, Users } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
 import { useState, useMemo } from "react";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import esLocale from "@fullcalendar/core/locales/es";
 
-// Horarios fijos de 8:00 a 21:00 cada hora
-const HORARIOS_FIJOS = [
-  "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
-  "14:00", "15:00", "16:00", "17:00", "18:00", "19:00",
-  "20:00", "21:00"
-];
-
-// Días de la semana
-const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
 export function CalendarWidget() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -30,87 +24,76 @@ export function CalendarWidget() {
     refetch();
   };
 
-  // Procesar datos y crear estructura completa de la semana
-  const calendarioSemanal = useMemo(() => {
-    // Obtener la semana actual (lunes a domingo)
-    const hoy = new Date();
-    const diaSemana = hoy.getDay(); // 0 = domingo, 1 = lunes, ...
-    const diasHastaLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
-    
-    const lunesActual = new Date(hoy);
-    lunesActual.setDate(hoy.getDate() + diasHastaLunes);
-    lunesActual.setHours(0, 0, 0, 0);
-
-    // Crear estructura de 7 días
-    const semana = DIAS_SEMANA.map((nombreDia, index) => {
-      const fecha = new Date(lunesActual);
-      fecha.setDate(lunesActual.getDate() + index);
-      
-      const fechaStr = fecha.toISOString().split('T')[0]; // YYYY-MM-DD
-      
-      return {
-        nombreDia,
-        fecha: fechaStr,
-        dia: fecha.getDate(),
-        mes: fecha.toLocaleString('es-ES', { month: 'short' }),
-        horarios: HORARIOS_FIJOS.map(hora => ({
-          hora,
-          clase: null as any, // Se llenará con datos reales si existen
-        }))
-      };
-    });
-
-    // Si hay datos, llenar con las clases reales
-    if (data?.hasData && data.data && Array.isArray(data.data)) {
-      const clases = data.data as Array<{
-        fecha: string;
-        hora: string;
-        reservas: number;
-        libres: number;
-        aforo: number;
-        alumnos?: string[];
-      }>;
-
-      clases.forEach(clase => {
-        const diaEncontrado = semana.find(d => d.fecha === clase.fecha);
-        if (diaEncontrado) {
-          // Buscar el horario más cercano
-          const horaBase = clase.hora.substring(0, 5); // "16:15" -> "16:15"
-          const horarioEncontrado = diaEncontrado.horarios.find(h => 
-            clase.hora.startsWith(h.hora.substring(0, 2)) // Comparar solo la hora
-          );
-          
-          if (horarioEncontrado) {
-            horarioEncontrado.clase = clase;
-          }
-        }
-      });
+  // Convertir datos de agenda a eventos de FullCalendar
+  const events = useMemo(() => {
+    if (!data?.hasData || !data.data || !Array.isArray(data.data)) {
+      return [];
     }
 
-    return semana;
+    const clases = data.data as Array<{
+      fecha: string;
+      hora: string;
+      reservas: number;
+      libres: number;
+      aforo: number;
+      alumnos?: string[];
+    }>;
+
+    return clases.map((clase) => {
+      // Parsear hora: "16:15 - 17:05" -> start: "16:15", end: "17:05"
+      const [horaInicio, horaFin] = clase.hora.split(' - ').map(h => h.trim());
+      
+      // Determinar color según disponibilidad
+      let backgroundColor = '#10b981'; // verde (plazas disponibles)
+      let borderColor = '#059669';
+      
+      if (clase.libres === 0) {
+        backgroundColor = '#ef4444'; // rojo (completo)
+        borderColor = '#dc2626';
+      } else if (clase.libres <= 2) {
+        backgroundColor = '#f59e0b'; // amarillo (pocas plazas)
+        borderColor = '#d97706';
+      }
+
+      return {
+        id: `${clase.fecha}-${horaInicio}`,
+        title: `${clase.reservas}/${clase.aforo} - ${clase.libres} libre${clase.libres !== 1 ? 's' : ''}`,
+        start: `${clase.fecha}T${horaInicio}:00`,
+        end: `${clase.fecha}T${horaFin}:00`,
+        backgroundColor,
+        borderColor,
+        extendedProps: {
+          reservas: clase.reservas,
+          libres: clase.libres,
+          aforo: clase.aforo,
+          alumnos: clase.alumnos || [],
+        },
+      };
+    });
   }, [data]);
 
   // Calcular estadísticas
   const estadisticas = useMemo(() => {
-    let totalClases = 0;
-    let totalLibres = 0;
+    if (!data?.hasData || !data.data || !Array.isArray(data.data)) {
+      return { totalClases: 0, totalLibres: 0, fechasUnicas: 0 };
+    }
 
-    calendarioSemanal.forEach(dia => {
-      dia.horarios.forEach(horario => {
-        if (horario.clase) {
-          totalClases++;
-          totalLibres += horario.clase.libres;
-        }
-      });
-    });
+    const clases = data.data as Array<{
+      fecha: string;
+      libres: number;
+    }>;
 
-    return { totalClases, totalLibres };
-  }, [calendarioSemanal]);
+    const fechasUnicas = new Set(clases.map(c => c.fecha)).size;
+    const totalClases = clases.length;
+    const totalLibres = clases.reduce((sum, c) => sum + c.libres, 0);
+
+    return { totalClases, totalLibres, fechasUnicas };
+  }, [data]);
 
   return (
     <Widget
       title="Calendario de Clases"
-      description="Horarios de 8:00 a 21:00 - Semana actual"
+      description="Horarios de 8:00 a 21:00"
       icon={<Calendar className="h-5 w-5" />}
       className="xl:col-span-3"
       onRefresh={handleRefresh}
@@ -145,135 +128,145 @@ export function CalendarWidget() {
               </div>
             )}
 
-            {/* Vista de calendario semanal */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {calendarioSemanal.map((dia) => {
-                const clasesDelDia = dia.horarios.filter(h => h.clase).length;
-                const libresDelDia = dia.horarios.reduce((sum, h) => sum + (h.clase?.libres || 0), 0);
-
-                return (
-                  <div
-                    key={dia.fecha}
-                    className="border rounded-lg p-3 bg-card hover:shadow-md transition-shadow"
-                  >
-                    {/* Cabecera del día */}
-                    <div className="mb-3 pb-2 border-b">
-                      <div className="font-semibold text-base">
-                        {dia.nombreDia}
+            {/* Calendario FullCalendar */}
+            {events.length > 0 ? (
+              <div className="fullcalendar-container">
+                <FullCalendar
+                  key={refreshKey}
+                  plugins={[timeGridPlugin, interactionPlugin]}
+                  initialView="timeGridWeek"
+                  locale={esLocale}
+                  headerToolbar={{
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridWeek,timeGridDay'
+                  }}
+                  slotMinTime="08:00:00"
+                  slotMaxTime="21:00:00"
+                  slotDuration="01:00:00"
+                  allDaySlot={false}
+                  height="auto"
+                  events={events}
+                  eventClick={(info) => {
+                    const { reservas, libres, aforo, alumnos } = info.event.extendedProps;
+                    const alumnosText = alumnos.length > 0 
+                      ? `\n\nAlumnos:\n${alumnos.join('\n')}`
+                      : '';
+                    
+                    alert(
+                      `Clase: ${info.event.title}\n` +
+                      `Horario: ${info.event.start?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - ${info.event.end?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}\n` +
+                      `Reservas: ${reservas}/${aforo}\n` +
+                      `Plazas libres: ${libres}` +
+                      alumnosText
+                    );
+                  }}
+                  eventContent={(eventInfo) => {
+                    return (
+                      <div className="p-1 text-xs">
+                        <div className="font-semibold">{eventInfo.event.title}</div>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {dia.dia} {dia.mes}
-                      </div>
-                      {clasesDelDia > 0 && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {clasesDelDia} clases · {libresDelDia} plazas libres
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Lista de horarios del día */}
-                    <div className="space-y-1 max-h-96 overflow-y-auto">
-                      {dia.horarios.map((horario, idx) => {
-                        const clase = horario.clase;
-                        
-                        if (!clase) {
-                          // Horario sin clase
-                          return (
-                            <div
-                              key={idx}
-                              className="p-2 rounded text-sm bg-muted/30 text-muted-foreground"
-                            >
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-3 w-3 opacity-50" />
-                                <span className="text-xs">{horario.hora}</span>
-                                <span className="text-xs opacity-50 ml-auto">Sin clase</span>
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        // Horario con clase
-                        return (
-                          <div
-                            key={idx}
-                            className={`p-2 rounded text-sm ${
-                              clase.libres === 0
-                                ? "bg-destructive/10 text-destructive"
-                                : clase.libres <= 2
-                                ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
-                                : "bg-green-500/10 text-green-700 dark:text-green-400"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-3 w-3" />
-                                <span className="font-medium text-xs">{clase.hora}</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-xs">
-                                <Users className="h-3 w-3" />
-                                <span>
-                                  {clase.reservas}/{clase.aforo}
-                                </span>
-                              </div>
-                            </div>
-                            {clase.libres > 0 && (
-                              <div className="text-xs mt-1 opacity-80">
-                                {clase.libres} {clase.libres === 1 ? "plaza" : "plazas"} libre
-                                {clase.libres === 1 ? "" : "s"}
-                              </div>
-                            )}
-                            {clase.libres === 0 && (
-                              <div className="text-xs mt-1 font-medium">
-                                Completo
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    );
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-lg">
+                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>No hay datos de clases cargados</p>
+                <p className="text-sm mt-2">
+                  Ejecuta el script de Playwright para cargar los horarios
+                </p>
+              </div>
+            )}
 
             {/* Resumen total */}
-            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-primary">
-                    7
+            {events.length > 0 && (
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-primary">
+                      {estadisticas.fechasUnicas}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Días</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Días</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-primary">
-                    {estadisticas.totalClases}
+                  <div>
+                    <div className="text-2xl font-bold text-primary">
+                      {estadisticas.totalClases}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Clases</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Clases</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {estadisticas.totalLibres}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Plazas libres
+                  <div>
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {estadisticas.totalLibres}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Plazas libres
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            {!data?.hasData && (
-              <div className="text-center py-4 text-sm text-muted-foreground bg-muted/30 rounded-lg">
-                <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No hay datos de clases cargados</p>
-                <p className="text-xs mt-1">
-                  Ejecuta el script de Playwright para cargar los horarios
-                </p>
+            {/* Leyenda de colores */}
+            {events.length > 0 && (
+              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-green-500"></div>
+                  <span>Plazas disponibles</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-yellow-500"></div>
+                  <span>Pocas plazas</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-red-500"></div>
+                  <span>Completo</span>
+                </div>
               </div>
             )}
           </>
         )}
       </div>
+
+      <style>{`
+        .fullcalendar-container {
+          --fc-border-color: hsl(var(--border));
+          --fc-button-bg-color: hsl(var(--primary));
+          --fc-button-border-color: hsl(var(--primary));
+          --fc-button-hover-bg-color: hsl(var(--primary) / 0.9);
+          --fc-button-hover-border-color: hsl(var(--primary) / 0.9);
+          --fc-button-active-bg-color: hsl(var(--primary) / 0.8);
+          --fc-button-active-border-color: hsl(var(--primary) / 0.8);
+          --fc-today-bg-color: hsl(var(--accent));
+        }
+        
+        .fullcalendar-container .fc {
+          font-family: inherit;
+        }
+        
+        .fullcalendar-container .fc-theme-standard td,
+        .fullcalendar-container .fc-theme-standard th {
+          border-color: var(--fc-border-color);
+        }
+        
+        .fullcalendar-container .fc-col-header-cell {
+          background-color: hsl(var(--muted));
+          padding: 8px 4px;
+        }
+        
+        .fullcalendar-container .fc-timegrid-slot {
+          height: 3em;
+        }
+        
+        .fullcalendar-container .fc-event {
+          cursor: pointer;
+        }
+        
+        .fullcalendar-container .fc-event:hover {
+          opacity: 0.9;
+        }
+      `}</style>
     </Widget>
   );
 }
