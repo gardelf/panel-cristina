@@ -8,13 +8,6 @@
       "when": 1771003249015,
       "tag": "0000_previous_echo",
       "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1771074818367,
-      "tag": "0001_outstanding_ultron",
-      "breakpoints": true
     }
   ]
 }

@@ -2,7 +2,6 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Widget } from "@/components/Widget";
 import { ExpensesWidget } from "@/components/ExpensesWidget";
 import { IncomeWidget } from "@/components/IncomeWidget";
-import { CalendarWidget } from "@/components/CalendarWidget";
 import { ClassesWidget } from "@/components/ClassesWidget";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
@@ -73,10 +72,7 @@ export default function Dashboard() {
           {/* Widget de Ingresos */}
           <IncomeWidget />
 
-          {/* Widget de Calendario de Clases */}
-          <CalendarWidget />
-
-          {/* Widget de Sistema de Gestión (iframe) */}
+          {/* Widget de Clases Vacías */}
           <ClassesWidget />
         </div>
       </main>
