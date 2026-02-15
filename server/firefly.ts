@@ -211,11 +211,11 @@ export class FireflyService {
 
       const allTransactions = response.data.data || [];
 
-      // Filtrar transacciones de la cuenta "Estudio"
+      // Filtrar transacciones con cuenta de destino "Estudio"
       const studioTransactions = allTransactions.filter((transaction) => {
         return transaction.attributes.transactions.some((t) => {
-          const sourceName = t.source_name?.toLowerCase() || "";
-          return sourceName.includes("estudio");
+          const destinationName = t.destination_name?.toLowerCase() || "";
+          return destinationName.includes("estudio");
         });
       });
 
@@ -223,7 +223,7 @@ export class FireflyService {
       const transactionDetails: TransactionDetail[] = [];
       studioTransactions.forEach((transaction) => {
         transaction.attributes.transactions.forEach((t) => {
-          if (t.source_name?.toLowerCase().includes("estudio")) {
+          if (t.destination_name?.toLowerCase().includes("estudio")) {
             transactionDetails.push({
               id: transaction.id,
               date: t.date,

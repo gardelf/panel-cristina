@@ -145,3 +145,6 @@
 
 ## Reorganización Widget Gastos
 - [x] Mover sección "Gastos del Estudio" para que aparezca antes de los gastos personales
+
+## Bug Filtro Gastos del Estudio
+- [x] Cambiar filtro de gastos del Estudio para usar cuenta de destino (destination_name) en lugar de cuenta de origen (source_name)
