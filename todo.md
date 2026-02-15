@@ -155,3 +155,7 @@
 ## Secciones Desplegables en Widget de Gastos
 - [x] Hacer desplegable la sección "Ayer" para mostrar lista de transacciones
 - [x] Hacer desplegable la sección "Gastos extraordinarios previstos" para mostrar lista de transacciones
+
+## Cálculos de Márgenes
+- [x] Agregar sección "Margen Estudio" a la derecha de "Gastos del Estudio" (Ingresos previstos - Gastos Estudio)
+- [x] Agregar sección "Margen Personal" al lado de "Gastos extraordinarios" (Margen Estudio - Gastos personales mes)
