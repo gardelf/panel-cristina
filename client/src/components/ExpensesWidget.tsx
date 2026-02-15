@@ -86,37 +86,7 @@ export function ExpensesWidget() {
             </Alert>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-              <p className="text-sm text-muted-foreground mb-1">Este mes</p>
-              <p className="text-2xl font-semibold">
-                {formatCurrency(data.currentMonth)}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-              <p className="text-sm text-muted-foreground mb-1">Última semana</p>
-              <p className="text-2xl font-semibold">
-                {formatCurrency(data.lastWeek)}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-              <p className="text-sm text-muted-foreground mb-1">Ayer</p>
-              <p className="text-2xl font-semibold">
-                {formatCurrency(data.yesterday)}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors">
-            <p className="text-sm text-muted-foreground mb-1">
-              Gastos extraordinarios previstos (próximo mes)
-            </p>
-            <p className="text-2xl font-semibold text-primary">
-              {formatCurrency(data.nextMonthExtraordinary)}
-            </p>
-          </div>
-
-          {/* Sección de Gastos del Estudio */}
+          {/* Sección de Gastos del Estudio - PRIMERO */}
           {studioData && studioData.enabled && (
             <div className="p-4 rounded-lg bg-accent/10 border border-accent/30">
               <button
@@ -184,6 +154,36 @@ export function ExpensesWidget() {
               )}
             </div>
           )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
+              <p className="text-sm text-muted-foreground mb-1">Este mes</p>
+              <p className="text-2xl font-semibold">
+                {formatCurrency(data.currentMonth)}
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
+              <p className="text-sm text-muted-foreground mb-1">Última semana</p>
+              <p className="text-2xl font-semibold">
+                {formatCurrency(data.lastWeek)}
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
+              <p className="text-sm text-muted-foreground mb-1">Ayer</p>
+              <p className="text-2xl font-semibold">
+                {formatCurrency(data.yesterday)}
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors">
+            <p className="text-sm text-muted-foreground mb-1">
+              Gastos extraordinarios previstos (próximo mes)
+            </p>
+            <p className="text-2xl font-semibold text-primary">
+              {formatCurrency(data.nextMonthExtraordinary)}
+            </p>
+          </div>
         </div>
       )}
     </Widget>

@@ -142,3 +142,6 @@
 - [x] Crear método para obtener gastos de la cuenta "Estudio"
 - [x] Agregar procedimiento tRPC para gastos del Estudio con lista detallada
 - [x] Actualizar ExpensesWidget con sección desplegable de gastos del Estudio
+
+## Reorganización Widget Gastos
+- [x] Mover sección "Gastos del Estudio" para que aparezca antes de los gastos personales
