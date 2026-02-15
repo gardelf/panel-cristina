@@ -45,6 +45,7 @@ export class FireflyService {
           Authorization: `Bearer ${config.token}`,
           Accept: "application/json",
           "Content-Type": "application/json",
+          "X-Firefly-Administration": "1", // Para multi-tenancy
         },
         timeout: 10000,
       });
@@ -139,6 +140,55 @@ export class FireflyService {
     // Por ahora retorna 0, se puede implementar lógica específica
     // basada en categorías, tags o transacciones recurrentes
     return 0;
+  }
+
+  /**
+   * Crea un nuevo gasto en Firefly III
+   */
+  async createExpense(data: {
+    description: string;
+    amount: number;
+    category: string;
+    date: string;
+  }): Promise<any> {
+    if (!this.enabled) {
+      throw new Error("Firefly III no está configurado");
+    }
+
+    try {
+      // Primero obtener la primera cuenta asset disponible
+      const accountsResponse = await this.client.get("/accounts", {
+        params: { type: "asset" },
+      });
+      
+      if (!accountsResponse.data.data || accountsResponse.data.data.length === 0) {
+        throw new Error("No se encontraron cuentas de activos en Firefly III");
+      }
+      
+      const sourceAccount = accountsResponse.data.data[0].attributes.name;
+      
+      const payload = {
+        error_if_duplicate_hash: false,
+        apply_rules: true,
+        transactions: [
+          {
+            type: "withdrawal",
+            date: data.date,
+            amount: data.amount.toString(),
+            description: data.description,
+            category_name: data.category,
+            source_name: sourceAccount,
+            destination_name: data.category, // Usar categoría como destino
+          },
+        ],
+      };
+
+      const response = await this.client.post("/transactions", payload);
+      return response.data;
+    } catch (error: any) {
+      console.error("[Firefly] Error creating expense:", error.response?.data || error.message);
+      throw new Error(`Error al crear gasto en Firefly III: ${error.response?.data?.message || error.message}`);
+    }
   }
 }
 

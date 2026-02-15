@@ -67,9 +67,11 @@ export function CalendarWidget() {
         borderColor = '#d97706';
       }
 
+      const valorOcupadas = clase.reservas * 15;
+      
       return {
         id: `${clase.fecha}-${horaInicio}`,
-        title: `${clase.reservas}/${clase.aforo} - ${clase.libres} libre${clase.libres !== 1 ? 's' : ''}`,
+        title: `${clase.reservas}/${clase.aforo} - ${valorOcupadas}€`,
         start: `${clase.fecha}T${horaInicio}:00`,
         end: `${clase.fecha}T${horaFin}:00`,
         backgroundColor,
@@ -79,6 +81,7 @@ export function CalendarWidget() {
           libres: clase.libres,
           aforo: clase.aforo,
           alumnos: clase.alumnos || [],
+          valorOcupadas,
         },
       };
     });
@@ -87,7 +90,7 @@ export function CalendarWidget() {
   // Calcular estadísticas
   const estadisticas = useMemo(() => {
     if (!data?.hasData || !data.data || !Array.isArray(data.data)) {
-      return { totalClases: 0, totalLibres: 0, fechasUnicas: 0 };
+      return { totalClases: 0, totalLibres: 0, fechasUnicas: 0, valorPotencial: 0 };
     }
 
     const clases = data.data as Array<{
@@ -98,8 +101,9 @@ export function CalendarWidget() {
     const fechasUnicas = new Set(clases.map(c => c.fecha)).size;
     const totalClases = clases.length;
     const totalLibres = clases.reduce((sum, c) => sum + c.libres, 0);
+    const valorPotencial = totalLibres * 15; // 15€ por plaza libre
 
-    return { totalClases, totalLibres, fechasUnicas };
+    return { totalClases, totalLibres, fechasUnicas, valorPotencial };
   }, [data]);
 
   return (
@@ -211,10 +215,10 @@ export function CalendarWidget() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {estadisticas.totalLibres}
+                      {estadisticas.valorPotencial}€
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Plazas libres
+                      Potencial ({estadisticas.totalLibres} plazas)
                     </div>
                   </div>
                 </div>

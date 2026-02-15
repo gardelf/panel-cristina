@@ -120,3 +120,16 @@
 
 ## Mejoras Visuales Calendario
 - [x] Hacer más visibles las líneas de separación entre horas en el calendario
+
+## Integración Atajo iPhone - Firefly III
+- [ ] Crear endpoint REST para recibir datos de transacciones desde atajo de iPhone
+- [ ] Integrar con API de Firefly III para crear gastos
+- [ ] Probar endpoint con datos de prueba
+- [ ] Crear instrucciones para configurar atajo de iPhone con entrada por voz
+
+## Bug Multi-tenancy Firefly III
+- [ ] Modificar código para trabajar con multi-tenancy activado en Firefly III
+
+## Mejoras Económicas Calendario
+- [x] Mostrar valor económico (15€ × plazas ocupadas) en cada clase del calendario
+- [x] Cambiar "Plazas libres" por valor económico potencial (15€ × plazas libres totales)

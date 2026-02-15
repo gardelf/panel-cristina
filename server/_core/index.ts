@@ -70,6 +70,39 @@ async function startServer() {
     }
   });
   
+  // REST endpoint para crear gastos desde atajo de iPhone
+  app.post("/api/expenses/create", async (req, res) => {
+    try {
+      const { description, amount, category, date } = req.body;
+      
+      if (!description || !amount) {
+        return res.status(400).json({ error: "Faltan campos obligatorios: description, amount" });
+      }
+      
+      // Importar servicio de Firefly III
+      const { getFireflyService } = await import("../firefly");
+      const fireflyService = getFireflyService();
+      
+      const result = await fireflyService.createExpense({
+        description,
+        amount: parseFloat(amount),
+        category: category || "Sin categoría",
+        date: date || new Date().toISOString().split('T')[0],
+      });
+      
+      console.log(`[Expenses] Gasto creado: ${description} - €${amount}`);
+      
+      res.json({
+        success: true,
+        message: "Gasto registrado correctamente",
+        transaction: result,
+      });
+    } catch (error: any) {
+      console.error("[Expenses] Error al crear gasto:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",
