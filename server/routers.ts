@@ -156,6 +156,30 @@ export const appRouter = router({
         throw new Error("Error al obtener datos de gastos");
       }
     }),
+
+    studio: protectedProcedure.query(async () => {
+      const firefly = getFireflyService();
+
+      if (!firefly.isEnabled()) {
+        return {
+          enabled: false,
+          total: 0,
+          transactions: [],
+        };
+      }
+
+      try {
+        const data = await firefly.getStudioAccountExpenses();
+
+        return {
+          enabled: true,
+          ...data,
+        };
+      } catch (error) {
+        console.error("[Expenses] Error fetching studio data:", error);
+        throw new Error("Error al obtener datos de gastos del Estudio");
+      }
+    }),
   }),
 });
 

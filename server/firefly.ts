@@ -14,8 +14,18 @@ interface Transaction {
       date: string;
       description: string;
       category_name?: string;
+      source_name?: string;
+      destination_name?: string;
     }>;
   };
+}
+
+export interface TransactionDetail {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  category?: string;
 }
 
 interface TransactionResponse {
@@ -171,6 +181,74 @@ export class FireflyService {
     } catch (error) {
       console.error("[Firefly] Error fetching extraordinary expenses:", error);
       return 0;
+    }
+  }
+
+  /**
+   * Obtiene gastos del mes actual de la cuenta "Estudio"
+   */
+  async getStudioAccountExpenses(): Promise<{
+    total: number;
+    transactions: TransactionDetail[];
+  }> {
+    if (!this.enabled) {
+      return { total: 0, transactions: [] };
+    }
+
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      // Obtener todas las transacciones del mes
+      const response = await this.client.get<TransactionResponse>("/transactions", {
+        params: {
+          start: startOfMonth.toISOString().split("T")[0],
+          end: endOfMonth.toISOString().split("T")[0],
+          type: "withdrawal",
+        },
+      });
+
+      const allTransactions = response.data.data || [];
+
+      // Filtrar transacciones de la cuenta "Estudio"
+      const studioTransactions = allTransactions.filter((transaction) => {
+        return transaction.attributes.transactions.some((t) => {
+          const sourceName = t.source_name?.toLowerCase() || "";
+          return sourceName.includes("estudio");
+        });
+      });
+
+      // Convertir a formato TransactionDetail
+      const transactionDetails: TransactionDetail[] = [];
+      studioTransactions.forEach((transaction) => {
+        transaction.attributes.transactions.forEach((t) => {
+          if (t.source_name?.toLowerCase().includes("estudio")) {
+            transactionDetails.push({
+              id: transaction.id,
+              date: t.date,
+              description: t.description,
+              amount: Math.abs(parseFloat(t.amount)),
+              category: t.category_name,
+            });
+          }
+        });
+      });
+
+      // Ordenar por fecha descendente
+      transactionDetails.sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      const total = transactionDetails.reduce((sum, t) => sum + t.amount, 0);
+
+      return {
+        total,
+        transactions: transactionDetails,
+      };
+    } catch (error) {
+      console.error("[Firefly] Error fetching studio expenses:", error);
+      return { total: 0, transactions: [] };
     }
   }
 

@@ -137,3 +137,8 @@
 ## Bug Gastos Extraordinarios
 - [x] Gastos con etiqueta "extraordinario" para próximo mes no se muestran en el panel
 - [x] Revisar criterio de detección de gastos extraordinarios
+
+## Gastos del Estudio
+- [x] Crear método para obtener gastos de la cuenta "Estudio"
+- [x] Agregar procedimiento tRPC para gastos del Estudio con lista detallada
+- [x] Actualizar ExpensesWidget con sección desplegable de gastos del Estudio
