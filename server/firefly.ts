@@ -71,6 +71,7 @@ export class FireflyService {
 
   /**
    * Obtiene transacciones en un rango de fechas
+   * Para gastos (withdrawal), filtra solo cuenta de destino "Personal"
    */
   async getTransactions(startDate: Date, endDate: Date, type: "withdrawal" | "deposit" = "withdrawal"): Promise<Transaction[]> {
     if (!this.enabled) {
@@ -86,7 +87,19 @@ export class FireflyService {
         },
       });
 
-      return response.data.data || [];
+      const allTransactions = response.data.data || [];
+
+      // Si es withdrawal, filtrar solo cuenta de destino "Personal"
+      if (type === "withdrawal") {
+        return allTransactions.filter((transaction) => {
+          return transaction.attributes.transactions.some((t) => {
+            const destinationName = t.destination_name?.toLowerCase() || "";
+            return destinationName.includes("personal");
+          });
+        });
+      }
+
+      return allTransactions;
     } catch (error) {
       console.error("[Firefly] Error fetching transactions:", error);
       throw new Error("Error al obtener transacciones de Firefly III");

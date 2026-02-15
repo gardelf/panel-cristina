@@ -148,3 +148,6 @@
 
 ## Bug Filtro Gastos del Estudio
 - [x] Cambiar filtro de gastos del Estudio para usar cuenta de destino (destination_name) en lugar de cuenta de origen (source_name)
+
+## Filtrar Gastos Personales
+- [x] Modificar métodos de gastos personales (Este mes, Última semana, Ayer) para filtrar solo cuenta de destino "Personal"
