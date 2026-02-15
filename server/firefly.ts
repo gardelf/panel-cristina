@@ -133,13 +133,45 @@ export class FireflyService {
 
   /**
    * Obtiene gastos extraordinarios previstos del próximo mes
-   * Nota: Firefly III no tiene un concepto nativo de "gastos previstos extraordinarios"
-   * Esta función busca transacciones recurrentes o con tags específicos
+   * Busca transacciones del próximo mes que tengan la etiqueta "extraordinario"
    */
   async getNextMonthExtraordinaryExpenses(): Promise<number> {
-    // Por ahora retorna 0, se puede implementar lógica específica
-    // basada en categorías, tags o transacciones recurrentes
-    return 0;
+    if (!this.enabled) {
+      return 0;
+    }
+
+    try {
+      const now = new Date();
+      const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const endOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+
+      // Obtener todas las transacciones del próximo mes
+      const response = await this.client.get<TransactionResponse>("/transactions", {
+        params: {
+          start: startOfNextMonth.toISOString().split("T")[0],
+          end: endOfNextMonth.toISOString().split("T")[0],
+          type: "withdrawal",
+        },
+      });
+
+      const transactions = response.data.data || [];
+
+      // Filtrar transacciones que tengan la etiqueta "extraordinario"
+      const extraordinaryTransactions = transactions.filter((transaction) => {
+        return transaction.attributes.transactions.some((t: any) => {
+          const tags = t.tags || [];
+          return tags.some((tag: string) => 
+            tag.toLowerCase() === "extraordinario" || 
+            tag.toLowerCase() === "extraordinaria"
+          );
+        });
+      });
+
+      return this.calculateTotal(extraordinaryTransactions);
+    } catch (error) {
+      console.error("[Firefly] Error fetching extraordinary expenses:", error);
+      return 0;
+    }
   }
 
   /**

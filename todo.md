@@ -133,3 +133,7 @@
 ## Mejoras Económicas Calendario
 - [x] Mostrar valor económico (15€ × plazas ocupadas) en cada clase del calendario
 - [x] Cambiar "Plazas libres" por valor económico potencial (15€ × plazas libres totales)
+
+## Bug Gastos Extraordinarios
+- [x] Gastos con etiqueta "extraordinario" para próximo mes no se muestran en el panel
+- [x] Revisar criterio de detección de gastos extraordinarios
