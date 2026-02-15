@@ -180,6 +180,54 @@ export const appRouter = router({
         throw new Error("Error al obtener datos de gastos del Estudio");
       }
     }),
+
+    yesterday: protectedProcedure.query(async () => {
+      const firefly = getFireflyService();
+
+      if (!firefly.isEnabled()) {
+        return {
+          enabled: false,
+          total: 0,
+          transactions: [],
+        };
+      }
+
+      try {
+        const data = await firefly.getYesterdayExpensesDetailed();
+
+        return {
+          enabled: true,
+          ...data,
+        };
+      } catch (error) {
+        console.error("[Expenses] Error fetching yesterday data:", error);
+        throw new Error("Error al obtener datos de gastos de ayer");
+      }
+    }),
+
+    extraordinary: protectedProcedure.query(async () => {
+      const firefly = getFireflyService();
+
+      if (!firefly.isEnabled()) {
+        return {
+          enabled: false,
+          total: 0,
+          transactions: [],
+        };
+      }
+
+      try {
+        const data = await firefly.getNextMonthExtraordinaryExpensesDetailed();
+
+        return {
+          enabled: true,
+          ...data,
+        };
+      } catch (error) {
+        console.error("[Expenses] Error fetching extraordinary data:", error);
+        throw new Error("Error al obtener datos de gastos extraordinarios");
+      }
+    }),
   }),
 });
 

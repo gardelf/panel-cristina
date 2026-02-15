@@ -151,3 +151,7 @@
 
 ## Filtrar Gastos Personales
 - [x] Modificar métodos de gastos personales (Este mes, Última semana, Ayer) para filtrar solo cuenta de destino "Personal"
+
+## Secciones Desplegables en Widget de Gastos
+- [x] Hacer desplegable la sección "Ayer" para mostrar lista de transacciones
+- [x] Hacer desplegable la sección "Gastos extraordinarios previstos" para mostrar lista de transacciones

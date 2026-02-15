@@ -155,6 +155,41 @@ export class FireflyService {
   }
 
   /**
+   * Obtiene gastos de ayer con detalle de transacciones
+   */
+  async getYesterdayExpensesDetailed(): Promise<{
+    total: number;
+    transactions: Array<{
+      id: string;
+      description: string;
+      amount: number;
+      date: string;
+      category: string | null;
+    }>;
+  }> {
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    yesterday.setHours(0, 0, 0, 0);
+    const yesterdayEnd = new Date(yesterday.getTime() + 24 * 60 * 60 * 1000 - 1);
+
+    const transactions = await this.getTransactions(yesterday, yesterdayEnd, "withdrawal");
+    const total = this.calculateTotal(transactions);
+
+    const transactionList = transactions.map((t) => {
+      const tx = t.attributes.transactions[0];
+      return {
+        id: t.id,
+        description: tx.description,
+        amount: parseFloat(tx.amount),
+        date: tx.date,
+        category: tx.category_name || null,
+      };
+    });
+
+    return { total, transactions: transactionList };
+  }
+
+  /**
    * Obtiene gastos extraordinarios previstos del próximo mes
    * Busca transacciones del próximo mes que tengan la etiqueta "extraordinario"
    */
@@ -194,6 +229,70 @@ export class FireflyService {
     } catch (error) {
       console.error("[Firefly] Error fetching extraordinary expenses:", error);
       return 0;
+    }
+  }
+
+  /**
+   * Obtiene gastos extraordinarios previstos del próximo mes con detalle
+   */
+  async getNextMonthExtraordinaryExpensesDetailed(): Promise<{
+    total: number;
+    transactions: Array<{
+      id: string;
+      description: string;
+      amount: number;
+      date: string;
+      category: string | null;
+    }>;
+  }> {
+    if (!this.enabled) {
+      return { total: 0, transactions: [] };
+    }
+
+    try {
+      const now = new Date();
+      const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const endOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+
+      // Obtener todas las transacciones del próximo mes
+      const response = await this.client.get<TransactionResponse>("/transactions", {
+        params: {
+          start: startOfNextMonth.toISOString().split("T")[0],
+          end: endOfNextMonth.toISOString().split("T")[0],
+          type: "withdrawal",
+        },
+      });
+
+      const transactions = response.data.data || [];
+
+      // Filtrar transacciones que tengan la etiqueta "extraordinario"
+      const extraordinaryTransactions = transactions.filter((transaction) => {
+        return transaction.attributes.transactions.some((t: any) => {
+          const tags = t.tags || [];
+          return tags.some((tag: string) => 
+            tag.toLowerCase() === "extraordinario" || 
+            tag.toLowerCase() === "extraordinaria"
+          );
+        });
+      });
+
+      const total = this.calculateTotal(extraordinaryTransactions);
+
+      const transactionList = extraordinaryTransactions.map((t) => {
+        const tx = t.attributes.transactions[0];
+        return {
+          id: t.id,
+          description: tx.description,
+          amount: parseFloat(tx.amount),
+          date: tx.date,
+          category: tx.category_name || null,
+        };
+      });
+
+      return { total, transactions: transactionList };
+    } catch (error) {
+      console.error("[Firefly] Error fetching extraordinary expenses:", error);
+      return { total: 0, transactions: [] };
     }
   }
 

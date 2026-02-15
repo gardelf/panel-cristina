@@ -15,7 +15,19 @@ export function ExpensesWidget() {
       refetchInterval: 5 * 60 * 1000,
     });
 
+  const { data: yesterdayData, isLoading: yesterdayLoading, refetch: refetchYesterday } = 
+    trpc.expenses.yesterday.useQuery(undefined, {
+      refetchInterval: 5 * 60 * 1000,
+    });
+
+  const { data: extraordinaryData, isLoading: extraordinaryLoading, refetch: refetchExtraordinary } = 
+    trpc.expenses.extraordinary.useQuery(undefined, {
+      refetchInterval: 5 * 60 * 1000,
+    });
+
   const [isStudioExpanded, setIsStudioExpanded] = useState(false);
+  const [isYesterdayExpanded, setIsYesterdayExpanded] = useState(false);
+  const [isExtraordinaryExpanded, setIsExtraordinaryExpanded] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-ES", {
@@ -36,6 +48,8 @@ export function ExpensesWidget() {
   const handleRefresh = () => {
     refetch();
     refetchStudio();
+    refetchYesterday();
+    refetchExtraordinary();
   };
 
   return (
@@ -168,21 +182,142 @@ export function ExpensesWidget() {
                 {formatCurrency(data.lastWeek)}
               </p>
             </div>
+
+            {/* Sección de Ayer - DESPLEGABLE */}
             <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-              <p className="text-sm text-muted-foreground mb-1">Ayer</p>
-              <p className="text-2xl font-semibold">
-                {formatCurrency(data.yesterday)}
-              </p>
+              <button
+                onClick={() => setIsYesterdayExpanded(!isYesterdayExpanded)}
+                className="w-full flex items-center justify-between"
+              >
+                <div className="text-left">
+                  <p className="text-sm text-muted-foreground mb-1">Ayer</p>
+                  <p className="text-2xl font-semibold">
+                    {formatCurrency(data.yesterday)}
+                  </p>
+                </div>
+                {yesterdayData && yesterdayData.transactions.length > 0 && (
+                  <>
+                    {isYesterdayExpanded ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </>
+                )}
+              </button>
+
+              {isYesterdayExpanded && yesterdayData && yesterdayData.enabled && (
+                <div className="mt-4 space-y-2 border-t border-secondary pt-4">
+                  {yesterdayLoading ? (
+                    <div className="space-y-2">
+                      {[1, 2].map((i) => (
+                        <Skeleton key={i} className="h-10 w-full" />
+                      ))}
+                    </div>
+                  ) : yesterdayData.transactions.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-2">
+                      No hay gastos de ayer
+                    </p>
+                  ) : (
+                    <div className="max-h-48 overflow-y-auto space-y-2">
+                      {yesterdayData.transactions.map((transaction) => (
+                        <div
+                          key={transaction.id}
+                          className="flex items-center justify-between p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium truncate">
+                              {transaction.description}
+                            </p>
+                            {transaction.category && (
+                              <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                {transaction.category}
+                              </p>
+                            )}
+                          </div>
+                          <div className="ml-3 text-right">
+                            <p className="text-xs font-semibold">
+                              {formatCurrency(transaction.amount)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Sección de Gastos Extraordinarios - DESPLEGABLE */}
           <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors">
-            <p className="text-sm text-muted-foreground mb-1">
-              Gastos extraordinarios previstos (próximo mes)
-            </p>
-            <p className="text-2xl font-semibold text-primary">
-              {formatCurrency(data.nextMonthExtraordinary)}
-            </p>
+            <button
+              onClick={() => setIsExtraordinaryExpanded(!isExtraordinaryExpanded)}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="text-left">
+                <p className="text-sm text-muted-foreground mb-1">
+                  Gastos extraordinarios previstos (próximo mes)
+                </p>
+                <p className="text-2xl font-semibold text-primary">
+                  {formatCurrency(data.nextMonthExtraordinary)}
+                </p>
+              </div>
+              {extraordinaryData && extraordinaryData.transactions.length > 0 && (
+                <>
+                  {isExtraordinaryExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </>
+              )}
+            </button>
+
+            {isExtraordinaryExpanded && extraordinaryData && extraordinaryData.enabled && (
+              <div className="mt-4 space-y-2 border-t border-primary/20 pt-4">
+                {extraordinaryLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-12 w-full" />
+                    ))}
+                  </div>
+                ) : extraordinaryData.transactions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No hay gastos extraordinarios previstos
+                  </p>
+                ) : (
+                  <div className="max-h-64 overflow-y-auto space-y-2">
+                    {extraordinaryData.transactions.map((transaction) => (
+                      <div
+                        key={transaction.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-background/50 hover:bg-background/80 transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {transaction.description}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                            <span>{formatDate(transaction.date)}</span>
+                            {transaction.category && (
+                              <>
+                                <span>•</span>
+                                <span className="truncate">{transaction.category}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="ml-4 text-right">
+                          <p className="text-sm font-semibold text-primary">
+                            {formatCurrency(transaction.amount)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
