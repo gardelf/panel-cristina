@@ -89,11 +89,11 @@ export function CalendarWidget() {
         borderColor = '#d97706';
       }
 
-      const valorOcupadas = clase.reservas * 15;
+      const valorLibres = clase.libres * 15;
       
       return {
         id: `clase-${clase.fecha}-${horaInicio}`,
-        title: `${clase.reservas}/${clase.aforo} - ${valorOcupadas}€`,
+        title: `${clase.reservas}/${clase.aforo} - ${valorLibres}€`,
         start: `${clase.fecha}T${horaInicio}:00`,
         end: `${clase.fecha}T${horaFin}:00`,
         backgroundColor,
@@ -104,7 +104,7 @@ export function CalendarWidget() {
           libres: clase.libres,
           aforo: clase.aforo,
           alumnos: clase.alumnos || [],
-          valorOcupadas,
+          valorLibres,
         },
       };
     });

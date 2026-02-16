@@ -213,3 +213,8 @@
 - [x] Revisar filtrado en CalendarWidget para eventos de hoy
 - [x] Corregir problema (startDate desde 00:00 en lugar de hora actual)
 - [x] Verificar que aparece en el calendario
+
+## Restaurar Información de Clases en Calendario
+- [x] Revisar CalendarWidget para ver cómo se muestran las clases
+- [x] Verificar que los datos de clases incluyen reservas, libres, aforo
+- [x] Cambiar cálculo económico de (reservas × 15€) a (libres × 15€)

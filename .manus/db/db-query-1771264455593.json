@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, uploadedAt, LENGTH(data) as data_size FROM agenda ORDER BY uploadedAt DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user UZtdrFd36x5de9Y.9019169b5b86 --database QcguDgDoPx2bifANXSGd27 --execute SELECT id, uploadedAt, LENGTH(data) as data_size FROM agenda ORDER BY uploadedAt DESC LIMIT 1;",
+  "rows": [
+    {
+      "id": "90001",
+      "uploadedAt": "2026-02-16 17:36:16",
+      "data_size": "5275"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuploadedAt\tdata_size\n90001\t2026-02-16 17:36:16\t5275\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

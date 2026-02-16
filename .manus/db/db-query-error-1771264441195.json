@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, uploaded_at, LENGTH(json_data) as data_size FROM agenda ORDER BY uploaded_at DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user UZtdrFd36x5de9Y.9019169b5b86 --database QcguDgDoPx2bifANXSGd27 --execute SELECT id, uploaded_at, LENGTH(json_data) as data_size FROM agenda ORDER BY uploaded_at DESC LIMIT 1;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'uploaded_at' in 'field list'"
+  ]
+}
