@@ -21,8 +21,12 @@ export function CalendarWidget() {
   );
 
   // Obtener eventos personales de iCloud
-  // Usar rango amplio para capturar eventos recurrentes con fechas antiguas
-  const startDate = useMemo(() => new Date().toISOString(), []);
+  // Empezar desde las 00:00 de hoy para incluir eventos que ya pasaron hoy
+  const startDate = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today.toISOString();
+  }, []);
   const endDate = useMemo(() => new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(), []);
   
   const { data: personalEvents, isLoading: personalLoading, refetch: refetchPersonal } = trpc.agenda.getPersonalEvents.useQuery(

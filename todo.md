@@ -207,3 +207,9 @@
 - [x] Eliminar lógica que reubica todos los eventos antiguos a hoy
 - [x] Implementar filtrado para excluir eventos con fechas antes de 2020
 - [x] Verificar que solo "Peritar daños Toyota" aparece para hoy 16/02/2026
+
+## Evento de Hoy 16/02/2026 No Aparece
+- [x] Verificar qué eventos se están obteniendo del backend para hoy
+- [x] Revisar filtrado en CalendarWidget para eventos de hoy
+- [x] Corregir problema (startDate desde 00:00 en lugar de hora actual)
+- [x] Verificar que aparece en el calendario
