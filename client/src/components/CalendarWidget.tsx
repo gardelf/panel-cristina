@@ -1,4 +1,4 @@
-import { Widget } from "@/components/Widget";
+import { Card } from "@/components/ui/card";
 import { Calendar, Clock, Users } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useState, useMemo } from "react";
@@ -22,7 +22,7 @@ export function CalendarWidget() {
 
   // Obtener eventos personales de iCloud
   // Usar rango amplio para capturar eventos recurrentes con fechas antiguas
-  const startDate = useMemo(() => "1990-01-01T00:00:00Z", []);
+  const startDate = useMemo(() => new Date().toISOString(), []);
   const endDate = useMemo(() => new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(), []);
   
   const { data: personalEvents, isLoading: personalLoading, refetch: refetchPersonal } = trpc.agenda.getPersonalEvents.useQuery(
@@ -112,277 +112,127 @@ export function CalendarWidget() {
       return [];
     }
 
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    // El backend ya parsea correctamente las fechas con TZID
+    // Solo filtrar eventos con fechas válidas (2020 en adelante)
+    const cutoffDate = new Date('2020-01-01');
 
-    return personalEvents.map((event) => {
-      let eventStart = event.start;
-      let eventEnd = event.end;
-
-      // Si el evento tiene fecha antigua (antes de 2020), mostrarlo hoy
-      // Estos son eventos recurrentes que iCloud considera actuales
-      const eventDate = new Date(event.start);
-      if (eventDate.getFullYear() < 2020) {
-        if (event.allDay) {
-          eventStart = todayStr;
-          eventEnd = todayStr;
-        } else {
-          // Mantener la hora pero cambiar la fecha a hoy
-          const timeMatch = event.start.match(/T(\d{2}:\d{2}:\d{2})/);
-          if (timeMatch) {
-            eventStart = `${todayStr}T${timeMatch[1]}Z`;
-            const endTimeMatch = event.end.match(/T(\d{2}:\d{2}:\d{2})/);
-            if (endTimeMatch) {
-              eventEnd = `${todayStr}T${endTimeMatch[1]}Z`;
-            } else {
-              eventEnd = eventStart;
-            }
-          } else {
-            eventStart = todayStr;
-            eventEnd = todayStr;
-          }
-        }
-      }
-
-      return {
-        id: `personal-${event.id}`,
-        title: event.title,
-        start: eventStart,
-        end: eventEnd,
-        allDay: event.allDay,
-        backgroundColor: '#8b5cf6', // morado para eventos personales
-        borderColor: '#7c3aed',
-        extendedProps: {
-          type: 'personal',
-          description: event.description,
-          location: event.location,
-          originalDate: event.start, // Guardar fecha original
-        },
-      };
-    });
+    return personalEvents
+      .filter((event) => {
+        const eventDate = new Date(event.start);
+        // Solo mostrar eventos con fechas válidas (2020+)
+        return eventDate >= cutoffDate;
+      })
+      .map((event) => {
+        return {
+          id: `personal-${event.id}`,
+          title: event.title,
+          start: event.start,
+          end: event.end,
+          allDay: event.allDay,
+          backgroundColor: '#9333ea', // morado para eventos personales
+          borderColor: '#7e22ce',
+          extendedProps: {
+            type: 'personal',
+            description: event.description,
+            location: event.location,
+          },
+        };
+      });
   }, [personalEvents]);
 
-  // Combinar ambos tipos de eventos
+  // Combinar eventos de clases y personales
   const allEvents = useMemo(() => {
     return [...clasesEvents, ...personalCalendarEvents];
   }, [clasesEvents, personalCalendarEvents]);
 
-  // Calcular estadísticas (solo de clases)
-  const estadisticas = useMemo(() => {
-    if (!clasesData?.hasData || !clasesData.data || !Array.isArray(clasesData.data)) {
-      return { totalClases: 0, totalLibres: 0, fechasUnicas: 0, valorPotencial: 0 };
-    }
-
-    const clases = clasesData.data as Array<{
-      fecha: string;
-      libres: number;
-    }>;
-
-    const fechasUnicas = new Set(clases.map(c => c.fecha)).size;
-    const totalClases = clases.length;
-    const totalLibres = clases.reduce((sum, c) => sum + c.libres, 0);
-    const valorPotencial = totalLibres * 15; // 15€ por plaza libre
-
-    return { totalClases, totalLibres, fechasUnicas, valorPotencial };
-  }, [clasesData]);
-
   return (
-    <Widget
-      title="Calendario de Clases"
-      description="Horarios de 8:00 a 21:00"
-      icon={<Calendar className="h-5 w-5" />}
-      className="xl:col-span-3"
-      onRefresh={handleRefresh}
-      isLoading={isLoading}
-    >
-      <div className="space-y-4">
-        {isLoading && (
-          <div className="text-center py-8 text-muted-foreground">
-            Cargando calendario...
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center py-8 text-destructive">
-            Error al cargar el calendario
-          </div>
-        )}
-
-        {!isLoading && !error && (
-          <>
-            {/* Información de última actualización */}
-            {clasesData?.uploadedAt && (
-              <div className="text-xs text-muted-foreground text-right">
-                Última actualización:{" "}
-                {new Date(clasesData.uploadedAt).toLocaleString("es-ES", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
-            )}
-
-            {/* Calendario FullCalendar */}
-            {allEvents.length > 0 ? (
-              <div className="fullcalendar-container">
-                <FullCalendar
-                  key={refreshKey}
-                  plugins={[timeGridPlugin, interactionPlugin]}
-                  initialView="timeGridWeek"
-                  initialDate={initialDate}
-                  locale={esLocale}
-                  headerToolbar={{
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'timeGridWeek,timeGridDay'
-                  }}
-                  slotMinTime="08:00:00"
-                  slotMaxTime="21:00:00"
-                  slotDuration="01:00:00"
-                  allDaySlot={true}
-                  height="auto"
-                  events={allEvents}
-                  eventClick={(info) => {
-                    const { type } = info.event.extendedProps;
-                    
-                    if (type === 'clase') {
-                      const { reservas, libres, aforo, alumnos } = info.event.extendedProps;
-                      const alumnosText = alumnos.length > 0 
-                        ? `\n\nAlumnos:\n${alumnos.join('\n')}`
-                        : '';
-                      
-                      alert(
-                        `Clase: ${info.event.title}\n` +
-                        `Horario: ${info.event.start?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - ${info.event.end?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}\n` +
-                        `Reservas: ${reservas}/${aforo}\n` +
-                        `Plazas libres: ${libres}` +
-                        alumnosText
-                      );
-                    } else if (type === 'personal') {
-                      const { description, location } = info.event.extendedProps;
-                      const descText = description ? `\n\nDescripción: ${description}` : '';
-                      const locText = location ? `\nUbicación: ${location}` : '';
-                      
-                      alert(
-                        `Evento Personal: ${info.event.title}\n` +
-                        `Fecha: ${info.event.start?.toLocaleDateString('es-ES')}` +
-                        descText +
-                        locText
-                      );
-                    }
-                  }}
-                  eventContent={(eventInfo) => {
-                    return (
-                      <div className="p-1 text-xs">
-                        <div className="font-semibold">{eventInfo.event.title}</div>
-                      </div>
-                    );
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-lg">
-                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No hay datos de clases cargados</p>
-                <p className="text-sm mt-2">
-                  Ejecuta el script de Playwright para cargar los horarios
-                </p>
-              </div>
-            )}
-
-            {/* Resumen total */}
-            {clasesEvents.length > 0 && (
-              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-primary">
-                      {estadisticas.fechasUnicas}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Días</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-primary">
-                      {estadisticas.totalClases}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Clases</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {estadisticas.valorPotencial}€
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Potencial ({estadisticas.totalLibres} plazas)
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Leyenda de colores */}
-            {allEvents.length > 0 && (
-              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-green-500"></div>
-                  <span>Plazas disponibles</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-yellow-500"></div>
-                  <span>Pocas plazas</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-red-500"></div>
-                  <span>Completo</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-purple-500"></div>
-                  <span>Eventos personales</span>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold">Calendario de Clases</h3>
+        </div>
+        <button
+          onClick={handleRefresh}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          🔄 Actualizar
+        </button>
       </div>
 
-      <style>{`
-        .fullcalendar-container {
-          --fc-border-color: hsl(var(--border));
-          --fc-button-bg-color: hsl(var(--primary));
-          --fc-button-border-color: hsl(var(--primary));
-          --fc-button-hover-bg-color: hsl(var(--primary) / 0.9);
-          --fc-button-hover-border-color: hsl(var(--primary) / 0.9);
-          --fc-button-active-bg-color: hsl(var(--primary) / 0.8);
-          --fc-button-active-border-color: hsl(var(--primary) / 0.8);
-          --fc-today-bg-color: hsl(var(--accent));
-        }
-        
-        .fullcalendar-container .fc {
-          font-family: inherit;
-        }
-        
-        .fullcalendar-container .fc-theme-standard td,
-        .fullcalendar-container .fc-theme-standard th {
-          border-color: var(--fc-border-color);
-        }
-        
-        .fullcalendar-container .fc-col-header-cell {
-          background-color: hsl(var(--muted));
-          padding: 8px 4px;
-        }
-        
-        .fullcalendar-container .fc-timegrid-slot {
-          height: 3em;
-        }
-        
-        .fullcalendar-container .fc-event {
-          cursor: pointer;
-        }
-        
-        .fullcalendar-container .fc-event:hover {
-          opacity: 0.9;
-        }
-      `}</style>
-    </Widget>
+      {/* Leyenda de colores */}
+      <div className="flex flex-wrap gap-4 mb-4 text-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded" style={{ backgroundColor: '#10b981' }}></div>
+          <span>Clases disponibles</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded" style={{ backgroundColor: '#f59e0b' }}></div>
+          <span>Pocas plazas</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded" style={{ backgroundColor: '#ef4444' }}></div>
+          <span>Completo</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded" style={{ backgroundColor: '#9333ea' }}></div>
+          <span>Eventos personales</span>
+        </div>
+      </div>
+
+      {isLoading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center py-8 text-destructive">
+          Error al cargar el calendario
+        </div>
+      )}
+
+      {!isLoading && !error && (
+        <div className="calendar-container">
+          <FullCalendar
+            key={refreshKey}
+            plugins={[timeGridPlugin, interactionPlugin]}
+            initialView="timeGridWeek"
+            initialDate={initialDate}
+            locale={esLocale}
+            headerToolbar={{
+              left: 'prev,next today',
+              center: 'title',
+              right: 'timeGridWeek,timeGridDay'
+            }}
+            slotMinTime="08:00:00"
+            slotMaxTime="22:00:00"
+            allDaySlot={false}
+            height="auto"
+            events={allEvents}
+            eventClick={(info) => {
+              const props = info.event.extendedProps;
+              if (props.type === 'clase') {
+                alert(
+                  `Clase: ${info.event.title}\n` +
+                  `Reservas: ${props.reservas}/${props.aforo}\n` +
+                  `Plazas libres: ${props.libres}\n` +
+                  `Valor: ${props.valorOcupadas}€\n` +
+                  `Alumnos: ${props.alumnos.join(', ') || 'Ninguno'}`
+                );
+              } else if (props.type === 'personal') {
+                alert(
+                  `Evento: ${info.event.title}\n` +
+                  `Inicio: ${new Date(info.event.start!).toLocaleString('es-ES')}\n` +
+                  `Fin: ${new Date(info.event.end!).toLocaleString('es-ES')}\n` +
+                  `Descripción: ${props.description || 'Sin descripción'}\n` +
+                  `Ubicación: ${props.location || 'Sin ubicación'}`
+                );
+              }
+            }}
+          />
+        </div>
+      )}
+    </Card>
   );
 }

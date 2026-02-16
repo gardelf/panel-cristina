@@ -201,3 +201,9 @@
 - [x] Identificar cómo obtener la hora correcta (9:30-10:30)
 - [x] Implementar solución para eventos con zona horaria (TZID)
 - [x] Verificar que muestra 9:30-10:30 en el calendario
+
+## Corregir Filtrado de Eventos Antiguos
+- [x] Analizar qué eventos se están mostrando incorrectamente en el calendario
+- [x] Eliminar lógica que reubica todos los eventos antiguos a hoy
+- [x] Implementar filtrado para excluir eventos con fechas antes de 2020
+- [x] Verificar que solo "Peritar daños Toyota" aparece para hoy 16/02/2026
