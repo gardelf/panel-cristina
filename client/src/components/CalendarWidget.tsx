@@ -89,11 +89,11 @@ export function CalendarWidget() {
         borderColor = '#d97706';
       }
 
-      const valorLibres = clase.libres * 15;
+      const valorOcupadas = clase.reservas * 15;
       
       return {
         id: `clase-${clase.fecha}-${horaInicio}`,
-        title: `${clase.reservas}/${clase.aforo} - ${valorLibres}€`,
+        title: `${clase.reservas}/${clase.aforo} - ${valorOcupadas}€`,
         start: `${clase.fecha}T${horaInicio}:00`,
         end: `${clase.fecha}T${horaFin}:00`,
         backgroundColor,
@@ -104,7 +104,7 @@ export function CalendarWidget() {
           libres: clase.libres,
           aforo: clase.aforo,
           alumnos: clase.alumnos || [],
-          valorLibres,
+          valorOcupadas,
         },
       };
     });
@@ -144,6 +144,32 @@ export function CalendarWidget() {
       });
   }, [personalEvents]);
 
+  // Calcular potencial a recuperar (plazas libres de la semana × 15€)
+  const potencialSemanal = useMemo(() => {
+    if (!clasesData || !clasesData.hasData || !clasesData.data) return 0;
+    
+    // Obtener fecha de inicio y fin de la semana actual
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Lunes
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // Domingo
+    endOfWeek.setHours(23, 59, 59, 999);
+    
+    // Sumar plazas libres de clases de esta semana
+    const totalLibres = clasesData.data.reduce((sum: number, clase: any) => {
+      const claseDate = new Date(clase.fecha);
+      if (claseDate >= startOfWeek && claseDate <= endOfWeek) {
+        return sum + clase.libres;
+      }
+      return sum;
+    }, 0);
+    
+    return totalLibres * 15;
+  }, [clasesData]);
+
   // Combinar eventos de clases y personales
   const allEvents = useMemo(() => {
     return [...clasesEvents, ...personalCalendarEvents];
@@ -152,9 +178,14 @@ export function CalendarWidget() {
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Calendario de Clases</h3>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold">Calendario de Clases</h3>
+          </div>
+          <p className="text-sm text-muted-foreground ml-7">
+            Potencial a recuperar: <span className="font-semibold text-green-600">{potencialSemanal}€</span>
+          </p>
         </div>
         <button
           onClick={handleRefresh}

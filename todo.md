@@ -218,3 +218,9 @@
 - [x] Revisar CalendarWidget para ver cómo se muestran las clases
 - [x] Verificar que los datos de clases incluyen reservas, libres, aforo
 - [x] Cambiar cálculo económico de (reservas × 15€) a (libres × 15€)
+
+## Corregir Cálculo Económico y Distribución
+- [x] Restaurar cálculo por clase a (ocupadas × 15€) en lugar de (libres × 15€)
+- [x] Agregar indicador "Potencial a recuperar" arriba del calendario
+- [x] Calcular suma de plazas libres de la semana × 15€ para el indicador
+- [x] Corregir distribución de widgets: Gastos (2/3) e Ingresos (1/3) en misma fila
