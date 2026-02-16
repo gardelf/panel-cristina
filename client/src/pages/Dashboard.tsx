@@ -66,17 +66,17 @@ export default function Dashboard() {
 
       {/* Dashboard Content */}
       <main className="container py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {/* Widget de Gastos */}
-          <ExpensesWidget />
+        <div className="space-y-6">
+          {/* Fila 1: Gastos e Ingresos en 2 columnas */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ExpensesWidget />
+            <IncomeWidget />
+          </div>
 
-          {/* Widget de Ingresos */}
-          <IncomeWidget />
-
-          {/* Widget de Calendario de Clases */}
+          {/* Fila 2: Calendario de Clases - ancho completo */}
           <CalendarWidget />
 
-          {/* Widget de Sistema de Gestión (iframe) */}
+          {/* Fila 3: Sistema de Clases - ancho completo */}
           <ClassesWidget />
         </div>
       </main>

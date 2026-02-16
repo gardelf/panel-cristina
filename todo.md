@@ -165,3 +165,7 @@
 - [x] Crear endpoint tRPC expenses.create para recibir datos del iPhone
 - [x] Crear documentación con instrucciones para configurar atajo de iPhone
 - [x] Probar endpoint con datos de ejemplo
+
+## Corregir Distribución de Widgets
+- [x] Revisar distribución actual de widgets en Home.tsx
+- [x] Restaurar diseño inicial con distribución correcta
