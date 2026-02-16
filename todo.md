@@ -195,3 +195,9 @@
 - [x] Corregir problema de visualización (ajustado rango de fechas en frontend)
 - [x] Modificar CalendarWidget para mostrar eventos antiguos en fecha de hoy
 - [x] Verificar que el evento aparece en el calendario del panel
+
+## Corregir Hora del Evento "Peritar daños Toyota"
+- [x] Investigar datos raw de iCloud para el evento
+- [x] Identificar cómo obtener la hora correcta (9:30-10:30)
+- [x] Implementar solución para eventos con zona horaria (TZID)
+- [x] Verificar que muestra 9:30-10:30 en el calendario

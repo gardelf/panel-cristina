@@ -140,15 +140,30 @@ function parseICalEvent(icalData: string, eventId: string): CalendarEvent | null
         const dateStr = trimmed.substring(19).trim();
         start = formatICalDate(dateStr, true);
         allDay = true;
-      } else if (trimmed.startsWith("DTSTART:")) {
-        // Evento con hora específica
+      } else if (trimmed.startsWith("DTSTART;TZID=")) {
+        // Evento con hora específica y zona horaria (prioridad sobre DTSTART:)
+        const colonIndex = trimmed.indexOf(":");
+        if (colonIndex !== -1) {
+          const dateStr = trimmed.substring(colonIndex + 1).trim();
+          start = formatICalDate(dateStr, false);
+        }
+      } else if (trimmed.startsWith("DTSTART:") && !start) {
+        // Evento con hora específica en UTC (solo si no se ha parseado ya con TZID)
         const dateStr = trimmed.substring(8).trim();
         start = formatICalDate(dateStr, false);
       } else if (trimmed.startsWith("DTEND;VALUE=DATE:")) {
         const dateStr = trimmed.substring(17).trim();
         end = formatICalDate(dateStr, true);
         allDay = true;
-      } else if (trimmed.startsWith("DTEND:")) {
+      } else if (trimmed.startsWith("DTEND;TZID=")) {
+        // Evento con hora específica y zona horaria (prioridad sobre DTEND:)
+        const colonIndex = trimmed.indexOf(":");
+        if (colonIndex !== -1) {
+          const dateStr = trimmed.substring(colonIndex + 1).trim();
+          end = formatICalDate(dateStr, false);
+        }
+      } else if (trimmed.startsWith("DTEND:") && !end) {
+        // Solo si no se ha parseado ya con TZID
         const dateStr = trimmed.substring(6).trim();
         end = formatICalDate(dateStr, false);
       } else if (trimmed.startsWith("DESCRIPTION:")) {
