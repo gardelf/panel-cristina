@@ -188,3 +188,10 @@
 - [x] Modificar getPersonalCalendarEvents para capturar eventos recurrentes
 - [x] Ajustar parseo de eventos para manejar fechas incorrectas
 - [x] Probar que eventos de hoy aparezcan en el calendario del panel
+
+## Diagnosticar Evento "Peritar daños Toyota" No Visible
+- [x] Verificar qué eventos se están enviando al frontend
+- [x] Revisar filtrado en CalendarWidget
+- [x] Corregir problema de visualización (ajustado rango de fechas en frontend)
+- [x] Modificar CalendarWidget para mostrar eventos antiguos en fecha de hoy
+- [x] Verificar que el evento aparece en el calendario del panel

@@ -20,8 +20,9 @@ export function CalendarWidget() {
     }
   );
 
-  // Obtener eventos personales de iCloud (próximos 60 días)
-  const startDate = useMemo(() => new Date().toISOString(), []);
+  // Obtener eventos personales de iCloud
+  // Usar rango amplio para capturar eventos recurrentes con fechas antiguas
+  const startDate = useMemo(() => "1990-01-01T00:00:00Z", []);
   const endDate = useMemo(() => new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(), []);
   
   const { data: personalEvents, isLoading: personalLoading, refetch: refetchPersonal } = trpc.agenda.getPersonalEvents.useQuery(
@@ -111,20 +112,54 @@ export function CalendarWidget() {
       return [];
     }
 
-    return personalEvents.map((event) => ({
-      id: `personal-${event.id}`,
-      title: event.title,
-      start: event.start,
-      end: event.end,
-      allDay: event.allDay,
-      backgroundColor: '#8b5cf6', // morado para eventos personales
-      borderColor: '#7c3aed',
-      extendedProps: {
-        type: 'personal',
-        description: event.description,
-        location: event.location,
-      },
-    }));
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    return personalEvents.map((event) => {
+      let eventStart = event.start;
+      let eventEnd = event.end;
+
+      // Si el evento tiene fecha antigua (antes de 2020), mostrarlo hoy
+      // Estos son eventos recurrentes que iCloud considera actuales
+      const eventDate = new Date(event.start);
+      if (eventDate.getFullYear() < 2020) {
+        if (event.allDay) {
+          eventStart = todayStr;
+          eventEnd = todayStr;
+        } else {
+          // Mantener la hora pero cambiar la fecha a hoy
+          const timeMatch = event.start.match(/T(\d{2}:\d{2}:\d{2})/);
+          if (timeMatch) {
+            eventStart = `${todayStr}T${timeMatch[1]}Z`;
+            const endTimeMatch = event.end.match(/T(\d{2}:\d{2}:\d{2})/);
+            if (endTimeMatch) {
+              eventEnd = `${todayStr}T${endTimeMatch[1]}Z`;
+            } else {
+              eventEnd = eventStart;
+            }
+          } else {
+            eventStart = todayStr;
+            eventEnd = todayStr;
+          }
+        }
+      }
+
+      return {
+        id: `personal-${event.id}`,
+        title: event.title,
+        start: eventStart,
+        end: eventEnd,
+        allDay: event.allDay,
+        backgroundColor: '#8b5cf6', // morado para eventos personales
+        borderColor: '#7c3aed',
+        extendedProps: {
+          type: 'personal',
+          description: event.description,
+          location: event.location,
+          originalDate: event.start, // Guardar fecha original
+        },
+      };
+    });
   }, [personalEvents]);
 
   // Combinar ambos tipos de eventos
