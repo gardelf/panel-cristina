@@ -70,6 +70,56 @@ export class FireflyService {
   }
 
   /**
+   * Crea una nueva transacción de gasto en Firefly III
+   */
+  async createTransaction(data: {
+    description: string;
+    amount: number;
+    date?: string;
+    category?: string;
+    sourceAccount?: string;
+    destinationAccount?: string;
+  }): Promise<{ success: boolean; transactionId?: string; error?: string }> {
+    if (!this.enabled) {
+      return { success: false, error: "Firefly III no está configurado" };
+    }
+
+    try {
+      const transactionDate = data.date || new Date().toISOString().split("T")[0];
+      
+      const payload = {
+        error_if_duplicate_hash: false,
+        apply_rules: true,
+        fire_webhooks: true,
+        transactions: [
+          {
+            type: "withdrawal",
+            date: transactionDate,
+            amount: data.amount.toString(),
+            description: data.description,
+            source_name: data.sourceAccount || "Cuenta Corriente",
+            destination_name: data.destinationAccount || "Personal",
+            category_name: data.category || null,
+          },
+        ],
+      };
+
+      const response = await this.client.post("/transactions", payload);
+      
+      return {
+        success: true,
+        transactionId: response.data.data.id,
+      };
+    } catch (error: any) {
+      console.error("Error creating transaction in Firefly:", error.response?.data || error.message);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || "Error desconocido",
+      };
+    }
+  }
+
+  /**
    * Obtiene transacciones en un rango de fechas
    * Para gastos (withdrawal), filtra solo cuenta de destino "Personal"
    */

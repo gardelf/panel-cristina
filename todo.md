@@ -159,3 +159,9 @@
 ## Cálculos de Márgenes
 - [x] Agregar sección "Margen Estudio" a la derecha de "Gastos del Estudio" (Ingresos previstos - Gastos Estudio)
 - [x] Agregar sección "Margen Personal" al lado de "Gastos extraordinarios" (Margen Estudio - Gastos personales mes)
+
+## Endpoint para Atajo de iPhone
+- [x] Crear método createTransaction en FireflyService para enviar gastos a Firefly III API
+- [x] Crear endpoint tRPC expenses.create para recibir datos del iPhone
+- [x] Crear documentación con instrucciones para configurar atajo de iPhone
+- [x] Probar endpoint con datos de ejemplo

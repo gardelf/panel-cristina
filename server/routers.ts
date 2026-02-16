@@ -228,6 +228,44 @@ export const appRouter = router({
         throw new Error("Error al obtener datos de gastos extraordinarios");
       }
     }),
+
+    // Endpoint para crear gastos desde atajo de iPhone
+    create: publicProcedure
+      .input(
+        z.object({
+          description: z.string().min(1, "La descripción es requerida"),
+          amount: z.number().positive("El monto debe ser positivo"),
+          date: z.string().optional(),
+          category: z.string().optional(),
+          sourceAccount: z.string().optional(),
+          destinationAccount: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const firefly = getFireflyService();
+
+        if (!firefly.isEnabled()) {
+          throw new Error("Firefly III no está configurado");
+        }
+
+        try {
+          console.log("[Expenses] Creando transacción:", input);
+          const result = await firefly.createTransaction(input);
+
+          if (!result.success) {
+            throw new Error(result.error || "Error al crear transacción");
+          }
+
+          return {
+            success: true,
+            transactionId: result.transactionId,
+            message: "Gasto registrado correctamente",
+          };
+        } catch (error: any) {
+          console.error("[Expenses] Error creating transaction:", error);
+          throw new Error(error.message || "Error al crear gasto");
+        }
+      }),
   }),
 });
 
