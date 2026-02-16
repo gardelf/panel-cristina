@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, uploadedAt, LEFT(data, 200) as data_preview FROM agenda ORDER BY uploadedAt DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user UZtdrFd36x5de9Y.9019169b5b86 --database QcguDgDoPx2bifANXSGd27 --execute SELECT id, uploadedAt, LEFT(data, 200) as data_preview FROM agenda ORDER BY uploadedAt DESC LIMIT 1;",
+  "rows": [
+    {
+      "id": "30003",
+      "uploadedAt": "2026-02-14 16:39:57",
+      "data_preview": "[{\"fecha\":\"2026-02-16\",\"hora\":\"16:15 - 17:05\",\"reservas\":5,\"libres\":0,\"aforo\":5,\"alumnos\":[\"Nuria Alonso Hernández\",\"Marta Gómez Triguero\",\"Susana Triguero Cava\",\"Virginia Diez Corrales\",\"Charo Trigue"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuploadedAt\tdata_preview\n30003\t2026-02-14 16:39:57\t[{\"fecha\":\"2026-02-16\",\"hora\":\"16:15 - 17:05\",\"reservas\":5,\"libres\":0,\"aforo\":5,\"alumnos\":[\"Nuria Alonso Hernández\",\"Marta Gómez Triguero\",\"Susana Triguero Cava\",\"Virginia Diez Corrales\",\"Charo Trigue\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

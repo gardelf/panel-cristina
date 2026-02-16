@@ -119,6 +119,28 @@ export const appRouter = router({
         throw new Error("Error al obtener agenda");
       }
     }),
+
+    // Endpoint para obtener eventos personales de iCloud Calendar
+    getPersonalEvents: protectedProcedure
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+        })
+      )
+      .query(async ({ input }) => {
+        try {
+          const { getPersonalCalendarEvents } = await import("./icloudCalendar");
+          const events = await getPersonalCalendarEvents(
+            input.startDate,
+            input.endDate
+          );
+          return events;
+        } catch (error) {
+          console.error("[Agenda] Error al obtener eventos personales:", error);
+          return [];
+        }
+      }),
   }),
 
   expenses: router({

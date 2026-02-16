@@ -1,0 +1,8 @@
+{
+  "query": "SELECT COUNT(*) as total, MAX(uploaded_at) as ultima_actualizacion FROM agenda;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user UZtdrFd36x5de9Y.9019169b5b86 --database QcguDgDoPx2bifANXSGd27 --execute SELECT COUNT(*) as total, MAX(uploaded_at) as ultima_actualizacion FROM agenda;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'uploaded_at' in ''"
+  ]
+}

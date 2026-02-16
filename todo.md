@@ -169,3 +169,17 @@
 ## Corregir Distribución de Widgets
 - [x] Revisar distribución actual de widgets en Home.tsx
 - [x] Restaurar diseño inicial con distribución correcta
+
+## Corregir Carga de Datos del Calendario
+- [x] Investigar por qué no se cargan datos de data/agenda.json
+- [x] Verificar endpoint trpc.agenda.getLatest
+- [x] Buscar y analizar run.js
+- [x] Integrar ejecución automática de upload-agenda.js en run.js
+
+## Integrar Calendario Personal de iPhone
+- [x] Configurar credenciales de iCloud en variables de entorno
+- [x] Instalar biblioteca tsdav para CalDAV
+- [x] Crear servicio icloudCalendar.ts
+- [x] Crear endpoint tRPC para eventos personales
+- [x] Actualizar CalendarWidget para combinar ambos calendarios
+- [x] Probar sincronización con iCloud

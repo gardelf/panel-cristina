@@ -11,7 +11,8 @@ import esLocale from "@fullcalendar/core/locales/es";
 export function CalendarWidget() {
   const [refreshKey, setRefreshKey] = useState(0);
   
-  const { data, isLoading, error, refetch } = trpc.agenda.getLatest.useQuery(
+  // Obtener eventos de clases
+  const { data: clasesData, isLoading: clasesLoading, error: clasesError, refetch: refetchClases } = trpc.agenda.getLatest.useQuery(
     undefined,
     {
       refetchInterval: 5 * 60 * 1000, // Refrescar cada 5 minutos
@@ -19,30 +20,46 @@ export function CalendarWidget() {
     }
   );
 
+  // Obtener eventos personales de iCloud (próximos 60 días)
+  const startDate = useMemo(() => new Date().toISOString(), []);
+  const endDate = useMemo(() => new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(), []);
+  
+  const { data: personalEvents, isLoading: personalLoading, refetch: refetchPersonal } = trpc.agenda.getPersonalEvents.useQuery(
+    { startDate, endDate },
+    {
+      refetchInterval: 5 * 60 * 1000,
+      staleTime: 5 * 60 * 1000,
+    }
+  );
+
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
-    refetch();
+    refetchClases();
+    refetchPersonal();
   };
+
+  const isLoading = clasesLoading || personalLoading;
+  const error = clasesError;
 
   // Calcular fecha inicial (primera clase disponible)
   const initialDate = useMemo(() => {
-    if (!data?.hasData || !data.data || !Array.isArray(data.data)) {
+    if (!clasesData?.hasData || !clasesData.data || !Array.isArray(clasesData.data)) {
       return undefined;
     }
-    const clases = data.data as Array<{ fecha: string }>;
+    const clases = clasesData.data as Array<{ fecha: string }>;
     if (clases.length === 0) return undefined;
     // Ordenar por fecha y tomar la primera
     const fechas = clases.map(c => c.fecha).sort();
     return fechas[0];
-  }, [data]);
+  }, [clasesData]);
 
   // Convertir datos de agenda a eventos de FullCalendar
-  const events = useMemo(() => {
-    if (!data?.hasData || !data.data || !Array.isArray(data.data)) {
+  const clasesEvents = useMemo(() => {
+    if (!clasesData?.hasData || !clasesData.data || !Array.isArray(clasesData.data)) {
       return [];
     }
 
-    const clases = data.data as Array<{
+    const clases = clasesData.data as Array<{
       fecha: string;
       hora: string;
       reservas: number;
@@ -70,13 +87,14 @@ export function CalendarWidget() {
       const valorOcupadas = clase.reservas * 15;
       
       return {
-        id: `${clase.fecha}-${horaInicio}`,
+        id: `clase-${clase.fecha}-${horaInicio}`,
         title: `${clase.reservas}/${clase.aforo} - ${valorOcupadas}€`,
         start: `${clase.fecha}T${horaInicio}:00`,
         end: `${clase.fecha}T${horaFin}:00`,
         backgroundColor,
         borderColor,
         extendedProps: {
+          type: 'clase',
           reservas: clase.reservas,
           libres: clase.libres,
           aforo: clase.aforo,
@@ -85,15 +103,42 @@ export function CalendarWidget() {
         },
       };
     });
-  }, [data]);
+  }, [clasesData]);
 
-  // Calcular estadísticas
+  // Convertir eventos personales a formato FullCalendar
+  const personalCalendarEvents = useMemo(() => {
+    if (!personalEvents || !Array.isArray(personalEvents)) {
+      return [];
+    }
+
+    return personalEvents.map((event) => ({
+      id: `personal-${event.id}`,
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      allDay: event.allDay,
+      backgroundColor: '#8b5cf6', // morado para eventos personales
+      borderColor: '#7c3aed',
+      extendedProps: {
+        type: 'personal',
+        description: event.description,
+        location: event.location,
+      },
+    }));
+  }, [personalEvents]);
+
+  // Combinar ambos tipos de eventos
+  const allEvents = useMemo(() => {
+    return [...clasesEvents, ...personalCalendarEvents];
+  }, [clasesEvents, personalCalendarEvents]);
+
+  // Calcular estadísticas (solo de clases)
   const estadisticas = useMemo(() => {
-    if (!data?.hasData || !data.data || !Array.isArray(data.data)) {
+    if (!clasesData?.hasData || !clasesData.data || !Array.isArray(clasesData.data)) {
       return { totalClases: 0, totalLibres: 0, fechasUnicas: 0, valorPotencial: 0 };
     }
 
-    const clases = data.data as Array<{
+    const clases = clasesData.data as Array<{
       fecha: string;
       libres: number;
     }>;
@@ -104,7 +149,7 @@ export function CalendarWidget() {
     const valorPotencial = totalLibres * 15; // 15€ por plaza libre
 
     return { totalClases, totalLibres, fechasUnicas, valorPotencial };
-  }, [data]);
+  }, [clasesData]);
 
   return (
     <Widget
@@ -131,10 +176,10 @@ export function CalendarWidget() {
         {!isLoading && !error && (
           <>
             {/* Información de última actualización */}
-            {data?.uploadedAt && (
+            {clasesData?.uploadedAt && (
               <div className="text-xs text-muted-foreground text-right">
                 Última actualización:{" "}
-                {new Date(data.uploadedAt).toLocaleString("es-ES", {
+                {new Date(clasesData.uploadedAt).toLocaleString("es-ES", {
                   day: "2-digit",
                   month: "2-digit",
                   year: "numeric",
@@ -145,7 +190,7 @@ export function CalendarWidget() {
             )}
 
             {/* Calendario FullCalendar */}
-            {events.length > 0 ? (
+            {allEvents.length > 0 ? (
               <div className="fullcalendar-container">
                 <FullCalendar
                   key={refreshKey}
@@ -161,22 +206,37 @@ export function CalendarWidget() {
                   slotMinTime="08:00:00"
                   slotMaxTime="21:00:00"
                   slotDuration="01:00:00"
-                  allDaySlot={false}
+                  allDaySlot={true}
                   height="auto"
-                  events={events}
+                  events={allEvents}
                   eventClick={(info) => {
-                    const { reservas, libres, aforo, alumnos } = info.event.extendedProps;
-                    const alumnosText = alumnos.length > 0 
-                      ? `\n\nAlumnos:\n${alumnos.join('\n')}`
-                      : '';
+                    const { type } = info.event.extendedProps;
                     
-                    alert(
-                      `Clase: ${info.event.title}\n` +
-                      `Horario: ${info.event.start?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - ${info.event.end?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}\n` +
-                      `Reservas: ${reservas}/${aforo}\n` +
-                      `Plazas libres: ${libres}` +
-                      alumnosText
-                    );
+                    if (type === 'clase') {
+                      const { reservas, libres, aforo, alumnos } = info.event.extendedProps;
+                      const alumnosText = alumnos.length > 0 
+                        ? `\n\nAlumnos:\n${alumnos.join('\n')}`
+                        : '';
+                      
+                      alert(
+                        `Clase: ${info.event.title}\n` +
+                        `Horario: ${info.event.start?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - ${info.event.end?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}\n` +
+                        `Reservas: ${reservas}/${aforo}\n` +
+                        `Plazas libres: ${libres}` +
+                        alumnosText
+                      );
+                    } else if (type === 'personal') {
+                      const { description, location } = info.event.extendedProps;
+                      const descText = description ? `\n\nDescripción: ${description}` : '';
+                      const locText = location ? `\nUbicación: ${location}` : '';
+                      
+                      alert(
+                        `Evento Personal: ${info.event.title}\n` +
+                        `Fecha: ${info.event.start?.toLocaleDateString('es-ES')}` +
+                        descText +
+                        locText
+                      );
+                    }
                   }}
                   eventContent={(eventInfo) => {
                     return (
@@ -198,7 +258,7 @@ export function CalendarWidget() {
             )}
 
             {/* Resumen total */}
-            {events.length > 0 && (
+            {clasesEvents.length > 0 && (
               <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
@@ -226,8 +286,8 @@ export function CalendarWidget() {
             )}
 
             {/* Leyenda de colores */}
-            {events.length > 0 && (
-              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+            {allEvents.length > 0 && (
+              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded bg-green-500"></div>
                   <span>Plazas disponibles</span>
@@ -239,6 +299,10 @@ export function CalendarWidget() {
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded bg-red-500"></div>
                   <span>Completo</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-purple-500"></div>
+                  <span>Eventos personales</span>
                 </div>
               </div>
             )}
