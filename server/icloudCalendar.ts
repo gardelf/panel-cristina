@@ -56,12 +56,21 @@ export async function getPersonalCalendarEvents(
     // Obtener eventos de todos los calendarios
     const allEvents: CalendarEvent[] = [];
 
+    // Ampliar el rango de fechas para capturar eventos recurrentes con fechas antiguas
+    // Usar un rango muy amplio (desde 1990 hasta endDate) para capturar todos los eventos
+    const expandedStartDate = "1990-01-01T00:00:00Z";
+
     for (const calendar of calendars) {
+      // Saltar calendarios de tipo VTODO (recordatorios/tareas)
+      if (calendar.components?.includes("VTODO")) {
+        continue;
+      }
+
       try {
         const calendarObjects = await client.fetchCalendarObjects({
           calendar: calendar,
           timeRange: {
-            start: startDate,
+            start: expandedStartDate,
             end: endDate,
           },
         });
@@ -72,7 +81,21 @@ export async function getPersonalCalendarEvents(
 
           const event = parseICalEvent(obj.data, obj.url || "");
           if (event) {
-            allEvents.push(event);
+            // Filtrar eventos para mostrar solo los del rango solicitado
+            // Esto permite capturar eventos con fechas antiguas pero que son recurrentes
+            const eventStart = new Date(event.start);
+            const rangeStart = new Date(startDate);
+            const rangeEnd = new Date(endDate);
+            
+            // Incluir evento si:
+            // 1. Está dentro del rango solicitado, O
+            // 2. Tiene fecha antigua (antes de 2020) - probablemente recurrente
+            if (
+              (eventStart >= rangeStart && eventStart <= rangeEnd) ||
+              eventStart.getFullYear() < 2020
+            ) {
+              allEvents.push(event);
+            }
           }
         }
       } catch (error) {

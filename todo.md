@@ -183,3 +183,8 @@
 - [x] Crear endpoint tRPC para eventos personales
 - [x] Actualizar CalendarWidget para combinar ambos calendarios
 - [x] Probar sincronización con iCloud
+
+## Corregir Filtrado de Eventos de iCloud
+- [x] Modificar getPersonalCalendarEvents para capturar eventos recurrentes
+- [x] Ajustar parseo de eventos para manejar fechas incorrectas
+- [x] Probar que eventos de hoy aparezcan en el calendario del panel
