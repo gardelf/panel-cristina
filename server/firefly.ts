@@ -415,6 +415,49 @@ export class FireflyService {
   }
 
   /**
+   * Obtiene el monto de la nómina de Cristina del mes vigente
+   * Busca transacción de tipo withdrawal con descripción "Nomina Cristina"
+   */
+  async getCristinaSalary(): Promise<number> {
+    if (!this.enabled) {
+      return 0;
+    }
+
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      // Obtener todas las transacciones del mes (sin filtro de cuenta destino)
+      const response = await this.client.get<TransactionResponse>("/transactions", {
+        params: {
+          start: startOfMonth.toISOString().split("T")[0],
+          end: endOfMonth.toISOString().split("T")[0],
+          type: "withdrawal",
+        },
+      });
+
+      const allTransactions = response.data.data || [];
+
+      // Buscar transacción con descripción "Nomina Cristina" (case-insensitive)
+      for (const transaction of allTransactions) {
+        for (const t of transaction.attributes.transactions) {
+          const description = t.description.toLowerCase();
+          if (description.includes("nomina cristina")) {
+            return Math.abs(parseFloat(t.amount));
+          }
+        }
+      }
+
+      // Si no se encuentra, retornar 0
+      return 0;
+    } catch (error) {
+      console.error("[Firefly] Error fetching Cristina's salary:", error);
+      return 0;
+    }
+  }
+
+  /**
    * Crea un nuevo gasto en Firefly III
    */
   async createExpense(data: {

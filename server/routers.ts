@@ -251,6 +251,118 @@ export const appRouter = router({
       }
     }),
 
+    salary: protectedProcedure.query(async () => {
+      const firefly = getFireflyService();
+
+      if (!firefly.isEnabled()) {
+        return {
+          enabled: false,
+          amount: 0,
+        };
+      }
+
+      try {
+        const amount = await firefly.getCristinaSalary();
+
+        return {
+          enabled: true,
+          amount,
+        };
+      } catch (error) {
+        console.error("[Expenses] Error fetching salary data:", error);
+        throw new Error("Error al obtener datos de nómina");
+      }
+    }),
+
+    // Endpoint para registrar gastos por voz con IA
+    registerVoice: publicProcedure
+      .input(
+        z.object({
+          texto: z.string().min(1, "El texto es requerido"),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const firefly = getFireflyService();
+
+        if (!firefly.isEnabled()) {
+          throw new Error("Firefly III no está configurado");
+        }
+
+        try {
+          console.log("[Expenses] Procesando texto por voz:", input.texto);
+          
+          // Extraer datos con IA
+          const { extraerDatosConIA, categorizarGasto } = await import("./expenseAI");
+          const extracted = await extraerDatosConIA(input.texto);
+          
+          console.log("[Expenses] Datos extraídos:", extracted);
+
+          // Validar que se extrajeron datos mínimos
+          if (!extracted.monto || !extracted.descripcion) {
+            throw new Error(
+              "No se pudo extraer monto y descripción del texto. Formato esperado: '25.50 Mercadona'"
+            );
+          }
+
+          // Validar que gastos extraordinarios tengan fecha
+          if (extracted.tags.includes("Extraordinario") && !extracted.fecha) {
+            throw new Error(
+              'Los gastos extraordinarios DEBEN incluir fecha. Ejemplo: "500 viaje extraordinario 15 febrero"'
+            );
+          }
+
+          // Si no hay categoría de la IA, categorizar automáticamente
+          let categoria = extracted.categoria;
+          let metodo = "ai";
+          if (!categoria || categoria === "Otros") {
+            const result = categorizarGasto(extracted.descripcion);
+            categoria = result.categoria;
+            metodo = result.metodo;
+          }
+
+          console.log(`[Expenses] Categoría: ${categoria} (método: ${metodo})`);
+
+          // Agregar tag a la descripción si es extraordinario
+          let descripcionFinal = extracted.descripcion;
+          if (extracted.tags.includes("Extraordinario")) {
+            descripcionFinal = `${extracted.descripcion} [EXTRAORDINARIO]`;
+          }
+
+          // Crear transacción en Firefly III
+          const result = await firefly.createTransaction({
+            description: descripcionFinal,
+            amount: extracted.monto,
+            date: extracted.fecha || undefined,
+            category: categoria,
+            sourceAccount: "Cuenta Corriente",
+            destinationAccount: "Personal",
+          });
+
+          if (!result.success) {
+            throw new Error(result.error || "Error al crear transacción");
+          }
+
+          const mensaje = `Registrado: ${extracted.monto} euros en ${categoria}${
+            extracted.fecha ? ` (fecha: ${extracted.fecha})` : ""
+          }`;
+
+          return {
+            success: true,
+            monto: extracted.monto,
+            descripcion: extracted.descripcion,
+            categoria,
+            fecha: extracted.fecha,
+            tags: extracted.tags,
+            metodo_categorizacion: metodo,
+            mensaje,
+            transactionId: result.transactionId,
+          };
+        } catch (error: any) {
+          console.error("[Expenses] Error processing voice input:", error);
+          throw new Error(error.message || "Error al procesar gasto por voz");
+        }
+      }),
+
     // Endpoint para crear gastos desde atajo de iPhone
     create: publicProcedure
       .input(

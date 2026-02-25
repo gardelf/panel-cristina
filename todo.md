@@ -224,3 +224,17 @@
 - [x] Agregar indicador "Potencial a recuperar" arriba del calendario
 - [x] Calcular suma de plazas libres de la semana × 15€ para el indicador
 - [x] Corregir distribución de widgets: Gastos (2/3) e Ingresos (1/3) en misma fila
+
+## Implementar Registro de Gastos por Voz con IA
+- [ ] Crear servicio de extracción de datos con OpenAI (extraer monto, descripción, fecha, categoría, tags)
+- [ ] Implementar endpoint tRPC expenses.registerVoice para recibir texto por voz
+- [ ] Integrar con Firefly III API para crear transacciones
+- [ ] Implementar tests para validar funcionalidad completa
+- [ ] Actualizar documentación IPHONE_SHORTCUT.md con nueva URL del panel
+
+## Reorganizar Widget de Gastos con Nómina Cristina
+- [x] Crear método getCristinaSalary en FireflyService para obtener gasto "Nomina Cristina" del mes vigente
+- [x] Crear endpoint tRPC expenses.salary para obtener nómina
+- [x] Reorganizar ExpensesWidget con nueva estructura (Fila 1: Gastos+Margen Estudio, Nómina completa, Fila 2: 3 cols gastos personales, Fila 3: 2 cols extraordinarios+margen)
+- [x] Actualizar cálculo Margen Personal a (Nómina Cristina - Gastos personales del mes)
+- [x] Implementar tests para getCristinaSalary

@@ -25,6 +25,11 @@ export function ExpensesWidget() {
       refetchInterval: 5 * 60 * 1000,
     });
 
+  const { data: salaryData, isLoading: salaryLoading, refetch: refetchSalary } = 
+    trpc.expenses.salary.useQuery(undefined, {
+      refetchInterval: 5 * 60 * 1000,
+    });
+
   // Obtener datos de ingresos para calcular márgenes
   const { data: incomeData, refetch: refetchIncome } = trpc.income.summary.useQuery(undefined, {
     refetchInterval: 5 * 60 * 1000,
@@ -53,6 +58,7 @@ export function ExpensesWidget() {
   const handleRefresh = () => {
     refetch();
     refetchStudio();
+    refetchSalary();
     refetchYesterday();
     refetchExtraordinary();
     refetchIncome();
@@ -63,9 +69,9 @@ export function ExpensesWidget() {
     ? incomeData.projectedIncome - studioData.total 
     : 0;
 
-  // Calcular Margen Personal = Margen Estudio - Gastos personales del mes
-  const margenPersonal = data && incomeData && studioData
-    ? margenEstudio - data.currentMonth
+  // Calcular Margen Personal = Nómina Cristina - Gastos personales del mes
+  const margenPersonal = data && salaryData
+    ? salaryData.amount - data.currentMonth
     : 0;
 
   return (
@@ -208,6 +214,41 @@ export function ExpensesWidget() {
             )}
           </div>
 
+          {/* Nómina Cristina - Ancho completo */}
+          {salaryData && salaryData.enabled && (
+            <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/30">
+              <div className="flex items-center justify-between">
+                <div className="text-left">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Nómina Cristina
+                  </p>
+                  <p className="text-2xl font-semibold text-purple-600 dark:text-purple-400">
+                    {salaryLoading ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      formatCurrency(salaryData.amount)
+                    )}
+                  </p>
+                </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 text-purple-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
+
+          {/* FILA 2: Este mes + Última semana + Ayer (3 columnas) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
               <p className="text-sm text-muted-foreground mb-1">Este mes</p>
@@ -370,7 +411,7 @@ export function ExpensesWidget() {
                       Margen Personal
                     </p>
                     <p className="text-xs text-muted-foreground mb-2">
-                      Margen Estudio - Gastos personales
+                      Nómina Cristina - Gastos personales
                     </p>
                     <p className={`text-2xl font-semibold ${margenPersonal >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
                       {formatCurrency(margenPersonal)}
