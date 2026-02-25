@@ -240,6 +240,40 @@ export class FireflyService {
   }
 
   /**
+   * Obtiene gastos del mes actual con detalle de transacciones
+   */
+  async getCurrentMonthExpensesDetailed(): Promise<{
+    total: number;
+    transactions: Array<{
+      id: string;
+      description: string;
+      amount: number;
+      date: string;
+      category: string | null;
+    }>;
+  }> {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const transactions = await this.getTransactions(startOfMonth, endOfMonth, "withdrawal");
+    const total = this.calculateTotal(transactions);
+
+    const transactionList = transactions.map((t) => {
+      const tx = t.attributes.transactions[0];
+      return {
+        id: t.id,
+        description: tx.description,
+        amount: parseFloat(tx.amount),
+        date: tx.date,
+        category: tx.category_name || null,
+      };
+    });
+
+    return { total, transactions: transactionList };
+  }
+
+  /**
    * Obtiene gastos extraordinarios previstos del próximo mes
    * Busca transacciones del próximo mes que tengan la etiqueta "extraordinario"
    */

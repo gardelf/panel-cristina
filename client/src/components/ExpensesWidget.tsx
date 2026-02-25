@@ -30,12 +30,18 @@ export function ExpensesWidget() {
       refetchInterval: 5 * 60 * 1000,
     });
 
+  const { data: currentMonthData, isLoading: currentMonthLoading, refetch: refetchCurrentMonth } = 
+    trpc.expenses.currentMonth.useQuery(undefined, {
+      refetchInterval: 5 * 60 * 1000,
+    });
+
   // Obtener datos de ingresos para calcular márgenes
   const { data: incomeData, refetch: refetchIncome } = trpc.income.summary.useQuery(undefined, {
     refetchInterval: 5 * 60 * 1000,
   });
 
   const [isStudioExpanded, setIsStudioExpanded] = useState(false);
+  const [isCurrentMonthExpanded, setIsCurrentMonthExpanded] = useState(false);
   const [isYesterdayExpanded, setIsYesterdayExpanded] = useState(false);
   const [isExtraordinaryExpanded, setIsExtraordinaryExpanded] = useState(false);
 
@@ -59,6 +65,7 @@ export function ExpensesWidget() {
     refetch();
     refetchStudio();
     refetchSalary();
+    refetchCurrentMonth();
     refetchYesterday();
     refetchExtraordinary();
     refetchIncome();
@@ -250,11 +257,69 @@ export function ExpensesWidget() {
 
           {/* FILA 2: Este mes + Última semana + Ayer (3 columnas) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Sección de Este mes - DESPLEGABLE */}
             <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-              <p className="text-sm text-muted-foreground mb-1">Este mes</p>
-              <p className="text-2xl font-semibold">
-                {formatCurrency(data.currentMonth)}
-              </p>
+              <button
+                onClick={() => setIsCurrentMonthExpanded(!isCurrentMonthExpanded)}
+                className="w-full flex items-center justify-between"
+              >
+                <div className="text-left">
+                  <p className="text-sm text-muted-foreground mb-1">Este mes</p>
+                  <p className="text-2xl font-semibold">
+                    {formatCurrency(data.currentMonth)}
+                  </p>
+                </div>
+                {currentMonthData && currentMonthData.transactions.length > 0 && (
+                  <>
+                    {isCurrentMonthExpanded ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </>
+                )}
+              </button>
+
+              {isCurrentMonthExpanded && currentMonthData && currentMonthData.enabled && (
+                <div className="mt-4 space-y-2 border-t border-secondary pt-4">
+                  {currentMonthLoading ? (
+                    <div className="space-y-2">
+                      {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-10 w-full" />
+                      ))}
+                    </div>
+                  ) : currentMonthData.transactions.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-2">
+                      No hay gastos este mes
+                    </p>
+                  ) : (
+                    <div className="max-h-48 overflow-y-auto space-y-2">
+                      {currentMonthData.transactions.map((transaction) => (
+                        <div
+                          key={transaction.id}
+                          className="flex items-center justify-between p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium truncate">
+                              {transaction.description}
+                            </p>
+                            {transaction.category && (
+                              <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                {transaction.category}
+                              </p>
+                            )}
+                          </div>
+                          <div className="ml-3 text-right">
+                            <p className="text-xs font-semibold">
+                              {formatCurrency(transaction.amount)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
               <p className="text-sm text-muted-foreground mb-1">Última semana</p>

@@ -238,3 +238,10 @@
 - [x] Reorganizar ExpensesWidget con nueva estructura (Fila 1: Gastos+Margen Estudio, Nómina completa, Fila 2: 3 cols gastos personales, Fila 3: 2 cols extraordinarios+margen)
 - [x] Actualizar cálculo Margen Personal a (Nómina Cristina - Gastos personales del mes)
 - [x] Implementar tests para getCristinaSalary
+
+## Agregar Desplegable en "Este mes" con Detalle de Transacciones
+- [x] Crear método getCurrentMonthExpensesDetailed en FireflyService
+- [x] Crear endpoint tRPC expenses.currentMonth para obtener transacciones detalladas
+- [x] Agregar estado isCurrentMonthExpanded en ExpensesWidget
+- [x] Implementar UI desplegable en sección "Este mes" con lista de transacciones
+- [x] Implementar tests para getCurrentMonthExpensesDetailed

@@ -227,6 +227,30 @@ export const appRouter = router({
       }
     }),
 
+    currentMonth: protectedProcedure.query(async () => {
+      const firefly = getFireflyService();
+
+      if (!firefly.isEnabled()) {
+        return {
+          enabled: false,
+          total: 0,
+          transactions: [],
+        };
+      }
+
+      try {
+        const data = await firefly.getCurrentMonthExpensesDetailed();
+
+        return {
+          enabled: true,
+          ...data,
+        };
+      } catch (error) {
+        console.error("[Expenses] Error fetching current month data:", error);
+        throw new Error("Error al obtener datos de gastos del mes actual");
+      }
+    }),
+
     extraordinary: protectedProcedure.query(async () => {
       const firefly = getFireflyService();
 
