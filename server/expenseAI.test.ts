@@ -21,9 +21,9 @@ describe("expenseAI", () => {
       expect(result.metodo).toBe("keyword");
     });
 
-    it("debe categorizar texto desconocido como Otros", () => {
+    it("debe retornar vacío para texto desconocido (IA decidirá)", () => {
       const result = categorizarGasto("algo completamente desconocido");
-      expect(result.categoria).toBe("Otros");
+      expect(result.categoria).toBe("");
       expect(result.metodo).toBe("default");
     });
 
@@ -126,15 +126,15 @@ describe("expenseAI", () => {
     it("debe tener todas las categorías esperadas", () => {
       const expectedCategories = [
         "Comida",
-        "Coche",
         "Salud",
-        "Transporte",
+        "Ropa y accesorios",
+        "Coche",
         "Ocio",
-        "Ropa",
+        "Deporte entrenamiento",
+        "Trámites",
         "Casa",
-        "Tecnología",
         "Viajes",
-        "Otros",
+        "Inversión",
       ];
 
       expectedCategories.forEach((cat) => {

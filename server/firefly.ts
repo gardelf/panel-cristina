@@ -79,6 +79,7 @@ export class FireflyService {
     category?: string;
     sourceAccount?: string;
     destinationAccount?: string;
+    tags?: string[];
   }): Promise<{ success: boolean; transactionId?: string; error?: string }> {
     if (!this.enabled) {
       return { success: false, error: "Firefly III no está configurado" };
@@ -100,6 +101,7 @@ export class FireflyService {
             source_name: data.sourceAccount || "Cuenta Corriente",
             destination_name: data.destinationAccount || "Personal",
             category_name: data.category || null,
+            tags: data.tags || [],
           },
         ],
       };

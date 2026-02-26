@@ -346,39 +346,48 @@ export const appRouter = router({
 
           console.log(`[Expenses] Categoría: ${categoria} (método: ${metodo})`);
 
-          // Agregar tag a la descripción si es extraordinario
-          let descripcionFinal = extracted.descripcion;
-          if (extracted.tags.includes("Extraordinario")) {
-            descripcionFinal = `${extracted.descripcion} [EXTRAORDINARIO]`;
-          }
+          // Determinar cuenta destino: si menciona "estudio" o palabras relacionadas, usar "Estudio", sino "Personales"
+          const descripcionLower = extracted.descripcion.toLowerCase();
+          const esEstudio = descripcionLower.includes("estudio") || 
+                           descripcionLower.includes("trabajo") ||
+                           descripcionLower.includes("oficina") ||
+                           descripcionLower.includes("profesional");
+          
+          const cuentaDestino = esEstudio ? "Estudio" : "Personales";
+
+          // Preparar tags para Firefly
+          const tags = extracted.tags.includes("Extraordinario") ? ["Extraordinario"] : [];
 
           // Crear transacción en Firefly III
           const result = await firefly.createTransaction({
-            description: descripcionFinal,
+            description: extracted.descripcion,
             amount: extracted.monto,
             date: extracted.fecha || undefined,
             category: categoria,
-            sourceAccount: "Cuenta Corriente",
-            destinationAccount: "Personal",
+            sourceAccount: "Cash",
+            destinationAccount: cuentaDestino,
+            tags,
           });
 
           if (!result.success) {
             throw new Error(result.error || "Error al crear transacción");
           }
 
-          const mensaje = `Registrado: ${extracted.monto} euros en ${categoria}${
-            extracted.fecha ? ` (fecha: ${extracted.fecha})` : ""
+          const mensaje = `✅ Registrado: ${extracted.monto}€ en ${categoria} (${cuentaDestino})${
+            extracted.fecha ? ` - Fecha: ${extracted.fecha}` : ""
+          }${
+            tags.length > 0 ? ` - Tags: ${tags.join(", ")}` : ""
           }`;
 
           return {
-            success: true,
+            success: mensaje, // Para el atajo de iPhone
             monto: extracted.monto,
             descripcion: extracted.descripcion,
             categoria,
+            cuentaDestino,
             fecha: extracted.fecha,
             tags: extracted.tags,
             metodo_categorizacion: metodo,
-            mensaje,
             transactionId: result.transactionId,
           };
         } catch (error: any) {

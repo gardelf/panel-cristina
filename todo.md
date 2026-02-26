@@ -245,3 +245,11 @@
 - [x] Agregar estado isCurrentMonthExpanded en ExpensesWidget
 - [x] Implementar UI desplegable en sección "Este mes" con lista de transacciones
 - [x] Implementar tests para getCurrentMonthExpensesDetailed
+
+## Ajustar Endpoint de Registro de Gastos por Voz con Configuración Específica
+- [x] Actualizar expenseAI.ts con categorías exactas del usuario (Comida, Salud, Ropa y accesorios, Coche, Ocio, Deporte entrenamiento, Trámites, Casa, Viajes, Inversión)
+- [x] Modificar endpoint registerVoice para usar cuentas: Cash → Estudio/Personales
+- [x] Configurar tag "Extraordinario" correctamente
+- [x] Asegurar respuesta en formato { success: "mensaje" } para atajo de iPhone
+- [x] Actualizar tests con nueva configuración
+- [x] Documentar URL del endpoint para configurar atajo de iPhone

@@ -5,18 +5,18 @@
 
 import { invokeLLM } from "./_core/llm";
 
-// Categorías conocidas (replicadas del sistema Python)
+// Categorías conocidas (configuración específica del usuario)
 export const CATEGORIAS_CONOCIDAS: Record<string, string[]> = {
-  "Comida": ["mercadona", "lidl", "carrefour", "supermercado", "restaurante", "comida", "cena", "desayuno", "almuerzo"],
-  "Coche": ["gasolina", "repsol", "cepsa", "taller", "mecánico", "parking", "aparcamiento", "peaje", "autopista"],
-  "Salud": ["farmacia", "médico", "doctor", "hospital", "clínica", "dentista", "seguro médico"],
-  "Transporte": ["taxi", "uber", "cabify", "metro", "bus", "tren", "renfe", "avión", "vueling"],
-  "Ocio": ["cine", "teatro", "concierto", "museo", "parque", "gimnasio", "deporte"],
-  "Ropa": ["zara", "h&m", "mango", "ropa", "zapatos", "zapatería"],
-  "Casa": ["ikea", "leroy", "bricomart", "ferretería", "muebles", "decoración"],
-  "Tecnología": ["media markt", "fnac", "pccomponentes", "ordenador", "móvil", "tablet"],
-  "Viajes": ["hotel", "hostal", "airbnb", "booking", "viaje"],
-  "Otros": []
+  "Comida": ["mercadona", "lidl", "carrefour", "supermercado", "restaurante", "comida", "cena", "desayuno", "almuerzo", "menu", "bar", "cafetería"],
+  "Salud": ["farmacia", "médico", "doctor", "hospital", "clínica", "dentista", "seguro médico", "consulta"],
+  "Ropa y accesorios": ["zara", "h&m", "mango", "ropa", "zapatos", "zapatería", "complementos", "accesorios", "bolso", "cinturón"],
+  "Coche": ["gasolina", "repsol", "cepsa", "taller", "mecánico", "parking", "aparcamiento", "peaje", "autopista", "seguro coche", "itv"],
+  "Ocio": ["cine", "teatro", "concierto", "museo", "parque", "ocio", "entretenimiento", "salir"],
+  "Deporte entrenamiento": ["gimnasio", "deporte", "entrenamiento", "fitness", "piscina", "yoga", "pilates", "running"],
+  "Trámites": ["notaría", "gestoría", "registro", "trámite", "hacienda", "impuesto", "multa", "tasa"],
+  "Casa": ["ikea", "leroy", "bricomart", "ferretería", "muebles", "decoración", "alquiler", "hipoteca", "luz", "agua", "gas", "internet"],
+  "Viajes": ["hotel", "hostal", "airbnb", "booking", "viaje", "avión", "tren", "vueling", "renfe"],
+  "Inversión": ["inversión", "acciones", "fondo", "bolsa", "criptomoneda", "ahorro"]
 };
 
 /**
@@ -34,8 +34,8 @@ export function categorizarGasto(descripcion: string): { categoria: string; meto
     }
   }
   
-  // Si no hay coincidencia, devolver "Otros"
-  return { categoria: "Otros", metodo: "default" };
+  // Si no hay coincidencia, devolver null para que la IA decida
+  return { categoria: "", metodo: "default" };
 }
 
 /**
