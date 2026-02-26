@@ -258,3 +258,10 @@
 - [x] Identificar colores actuales del calendario (verde, naranja, rojo, morado brillantes)
 - [x] Definir nuevos tonos suaves inspirados en paleta de Gastos/Ingresos
 - [x] Actualizar colores en CalendarWidget.tsx para clases disponibles, pocas plazas, completo y eventos personales
+
+## Aplicar Colores Exactos de Gastos al Calendario
+- [x] Extraer colores exactos de ExpensesWidget (verde Margen Estudio, azul Gastos extraordinarios, morado Nómina Cristina)
+- [x] Aplicar verde de Margen Estudio a "Clases disponibles"
+- [x] Aplicar azul de Gastos extraordinarios a "Pocas plazas"
+- [x] Aplicar morado de Nómina Cristina a "Eventos personales"
+- [x] Mantener rojo suave para "Completo"

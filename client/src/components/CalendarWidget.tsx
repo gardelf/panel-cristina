@@ -77,16 +77,19 @@ export function CalendarWidget() {
       // Parsear hora: "16:15 - 17:05" -> start: "16:15", end: "17:05"
       const [horaInicio, horaFin] = clase.hora.split(' - ').map(h => h.trim());
       
-      // Determinar color según disponibilidad (tonos suaves inspirados en Gastos/Ingresos)
-      let backgroundColor = '#86efac'; // verde suave (plazas disponibles)
-      let borderColor = '#4ade80';
+      // Determinar color según disponibilidad (colores exactos de ExpensesWidget)
+      let backgroundColor = 'rgba(34, 197, 94, 0.1)'; // verde de Margen Estudio (plazas disponibles)
+      let borderColor = 'rgba(34, 197, 94, 0.3)';
+      let textColor = '#16a34a'; // text-green-600
       
       if (clase.libres === 0) {
-        backgroundColor = '#fca5a5'; // rojo suave (completo)
-        borderColor = '#f87171';
+        backgroundColor = 'rgba(239, 68, 68, 0.15)'; // rojo suave (completo)
+        borderColor = 'rgba(239, 68, 68, 0.4)';
+        textColor = '#dc2626'; // text-red-600
       } else if (clase.libres <= 2) {
-        backgroundColor = '#fcd34d'; // amarillo suave (pocas plazas)
-        borderColor = '#fbbf24';
+        backgroundColor = 'rgba(59, 130, 246, 0.1)'; // azul de Margen Personal (pocas plazas)
+        borderColor = 'rgba(59, 130, 246, 0.3)';
+        textColor = '#2563eb'; // text-blue-600
       }
 
       const valorOcupadas = clase.reservas * 15;
@@ -98,6 +101,7 @@ export function CalendarWidget() {
         end: `${clase.fecha}T${horaFin}:00`,
         backgroundColor,
         borderColor,
+        textColor,
         extendedProps: {
           type: 'clase',
           reservas: clase.reservas,
@@ -133,8 +137,9 @@ export function CalendarWidget() {
           start: event.start,
           end: event.end,
           allDay: event.allDay,
-          backgroundColor: '#d8b4fe', // morado suave para eventos personales (inspirado en Nómina Cristina)
-          borderColor: '#c084fc',
+          backgroundColor: 'rgba(168, 85, 247, 0.1)', // morado de Nómina Cristina (eventos personales)
+          borderColor: 'rgba(168, 85, 247, 0.3)',
+          textColor: '#9333ea', // text-purple-600
           extendedProps: {
             type: 'personal',
             description: event.description,
