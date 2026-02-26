@@ -253,3 +253,8 @@
 - [x] Asegurar respuesta en formato { success: "mensaje" } para atajo de iPhone
 - [x] Actualizar tests con nueva configuración
 - [x] Documentar URL del endpoint para configurar atajo de iPhone
+
+## Suavizar Colores del Calendario
+- [x] Identificar colores actuales del calendario (verde, naranja, rojo, morado brillantes)
+- [x] Definir nuevos tonos suaves inspirados en paleta de Gastos/Ingresos
+- [x] Actualizar colores en CalendarWidget.tsx para clases disponibles, pocas plazas, completo y eventos personales

@@ -77,16 +77,16 @@ export function CalendarWidget() {
       // Parsear hora: "16:15 - 17:05" -> start: "16:15", end: "17:05"
       const [horaInicio, horaFin] = clase.hora.split(' - ').map(h => h.trim());
       
-      // Determinar color según disponibilidad
-      let backgroundColor = '#10b981'; // verde (plazas disponibles)
-      let borderColor = '#059669';
+      // Determinar color según disponibilidad (tonos suaves inspirados en Gastos/Ingresos)
+      let backgroundColor = '#86efac'; // verde suave (plazas disponibles)
+      let borderColor = '#4ade80';
       
       if (clase.libres === 0) {
-        backgroundColor = '#ef4444'; // rojo (completo)
-        borderColor = '#dc2626';
+        backgroundColor = '#fca5a5'; // rojo suave (completo)
+        borderColor = '#f87171';
       } else if (clase.libres <= 2) {
-        backgroundColor = '#f59e0b'; // amarillo (pocas plazas)
-        borderColor = '#d97706';
+        backgroundColor = '#fcd34d'; // amarillo suave (pocas plazas)
+        borderColor = '#fbbf24';
       }
 
       const valorOcupadas = clase.reservas * 15;
@@ -133,8 +133,8 @@ export function CalendarWidget() {
           start: event.start,
           end: event.end,
           allDay: event.allDay,
-          backgroundColor: '#9333ea', // morado para eventos personales
-          borderColor: '#7e22ce',
+          backgroundColor: '#d8b4fe', // morado suave para eventos personales (inspirado en Nómina Cristina)
+          borderColor: '#c084fc',
           extendedProps: {
             type: 'personal',
             description: event.description,
