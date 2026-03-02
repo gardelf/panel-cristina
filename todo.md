@@ -265,3 +265,11 @@
 - [x] Aplicar azul de Gastos extraordinarios a "Pocas plazas"
 - [x] Aplicar morado de Nómina Cristina a "Eventos personales"
 - [x] Mantener rojo suave para "Completo"
+
+## Migración a Railway
+- [ ] Eliminar autenticación Manus OAuth y dependencia de MySQL
+- [ ] Hacer todas las rutas públicas (publicProcedure)
+- [ ] Añadir configuración de Railway (railway.json, nixpacks)
+- [ ] Crear repositorio en GitHub y subir código
+- [ ] Desplegar en Railway y configurar variables de entorno
+- [ ] Verificar despliegue correcto

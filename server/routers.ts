@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, router } from "./_core/trpc";
 import { getFireflyService } from "./firefly";
 import { getGoogleSheetsService } from "./googleSheets";
 import { z } from "zod";
@@ -24,7 +24,7 @@ export const appRouter = router({
   }),
 
   income: router({
-    summary: protectedProcedure.query(async () => {
+    summary: publicProcedure.query(async () => {
       const sheets = getGoogleSheetsService();
 
       if (!sheets.isEnabled()) {
@@ -88,7 +88,7 @@ export const appRouter = router({
       }),
 
     // Endpoint para obtener la última agenda
-    getLatest: protectedProcedure.query(async () => {
+    getLatest: publicProcedure.query(async () => {
       try {
         const db = await getDb();
         if (!db) {
@@ -121,7 +121,7 @@ export const appRouter = router({
     }),
 
     // Endpoint para obtener eventos personales de iCloud Calendar
-    getPersonalEvents: protectedProcedure
+    getPersonalEvents: publicProcedure
       .input(
         z.object({
           startDate: z.string(),
@@ -144,7 +144,7 @@ export const appRouter = router({
   }),
 
   expenses: router({
-    summary: protectedProcedure.query(async () => {
+    summary: publicProcedure.query(async () => {
       const firefly = getFireflyService();
 
       if (!firefly.isEnabled()) {
@@ -179,7 +179,7 @@ export const appRouter = router({
       }
     }),
 
-    studio: protectedProcedure.query(async () => {
+    studio: publicProcedure.query(async () => {
       const firefly = getFireflyService();
 
       if (!firefly.isEnabled()) {
@@ -203,7 +203,7 @@ export const appRouter = router({
       }
     }),
 
-    yesterday: protectedProcedure.query(async () => {
+    yesterday: publicProcedure.query(async () => {
       const firefly = getFireflyService();
 
       if (!firefly.isEnabled()) {
@@ -227,7 +227,7 @@ export const appRouter = router({
       }
     }),
 
-    currentMonth: protectedProcedure.query(async () => {
+    currentMonth: publicProcedure.query(async () => {
       const firefly = getFireflyService();
 
       if (!firefly.isEnabled()) {
@@ -251,7 +251,7 @@ export const appRouter = router({
       }
     }),
 
-    extraordinary: protectedProcedure.query(async () => {
+    extraordinary: publicProcedure.query(async () => {
       const firefly = getFireflyService();
 
       if (!firefly.isEnabled()) {
@@ -275,7 +275,7 @@ export const appRouter = router({
       }
     }),
 
-    salary: protectedProcedure.query(async () => {
+    salary: publicProcedure.query(async () => {
       const firefly = getFireflyService();
 
       if (!firefly.isEnabled()) {
