@@ -74,6 +74,34 @@ async function startServer() {
     }
   });
 
+  // REST endpoint para subir agenda desde script Playwright local
+  app.post("/api/agenda/upload", async (req, res) => {
+    try {
+      const agendaData = req.body;
+
+      if (!agendaData || !Array.isArray(agendaData)) {
+        return res.status(400).json({ success: false, error: "Se esperaba un array de clases" });
+      }
+
+      const { getDb } = await import("../db");
+      const { agenda } = await import("../../drizzle/schema");
+
+      const db = await getDb();
+      if (!db) {
+        return res.status(500).json({ success: false, error: "Base de datos no disponible" });
+      }
+
+      const dataStr = JSON.stringify(agendaData);
+      await db.insert(agenda).values({ data: dataStr });
+
+      console.log(`[Agenda] Subidas ${agendaData.length} clases via REST`);
+      res.json({ success: true, count: agendaData.length, timestamp: new Date().toISOString() });
+    } catch (error: any) {
+      console.error("[Agenda] Error al subir:", error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",
