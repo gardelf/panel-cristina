@@ -3,7 +3,7 @@
  * Extrae información de gastos desde texto natural usando OpenAI GPT-4o-mini
  */
 
-import { invokeLLM } from "./_core/llm";
+// Usa OpenAI directamente via fetch (sin SDK)
 
 // Categorías conocidas (configuración específica del usuario)
 export const CATEGORIAS_CONOCIDAS: Record<string, string[]> = {
@@ -49,8 +49,20 @@ export async function extraerDatosConIA(texto: string): Promise<{
   tags: string[];
 }> {
   try {
-    const response = await invokeLLM({
-      messages: [
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error("OPENAI_API_KEY is not configured");
+    }
+
+    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
         {
           role: "system",
           content: `Eres un asistente que extrae información de gastos desde texto natural en español.
@@ -83,7 +95,7 @@ Responde SOLO con JSON válido.`
           content: texto
         }
       ],
-      response_format: {
+        response_format: {
         type: "json_schema",
         json_schema: {
           name: "expense_extraction",
@@ -120,9 +132,16 @@ Responde SOLO con JSON válido.`
           }
         }
       }
+      }),
     });
 
-    const content = response.choices[0]?.message?.content;
+    if (!openaiResponse.ok) {
+      const errText = await openaiResponse.text();
+      throw new Error(`OpenAI API error ${openaiResponse.status}: ${errText}`);
+    }
+
+    const responseData = await openaiResponse.json() as { choices: Array<{ message: { content: string } }> };
+    const content = responseData.choices[0]?.message?.content;
     if (!content) {
       throw new Error("No se recibió respuesta de la IA");
     }
