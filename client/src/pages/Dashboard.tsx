@@ -2,6 +2,7 @@ import { ExpensesWidget } from "@/components/ExpensesWidget";
 import { IncomeWidget } from "@/components/IncomeWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { ClassesWidget } from "@/components/ClassesWidget";
+import { MedigestWidget } from "@/components/MedigestWidget";
 
 export default function Dashboard() {
   return (
@@ -30,8 +31,9 @@ export default function Dashboard() {
             <div className="lg:col-span-2">
               <ExpensesWidget />
             </div>
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 flex flex-col gap-6">
               <IncomeWidget />
+              <MedigestWidget />
             </div>
           </div>
 

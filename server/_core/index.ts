@@ -102,6 +102,67 @@ async function startServer() {
     }
   });
 
+  // Proxy endpoint para obtener datos de stock de Medigest
+  app.get("/api/medigest/stock", async (_req, res) => {
+    try {
+      const medigestUrl = process.env.MEDIGEST_URL || "https://medigest-production.up.railway.app";
+      const response = await fetch(
+        `${medigestUrl}/api/trpc/medicamentos.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D`
+      );
+
+      if (!response.ok) {
+        return res.status(502).json({ error: "Error al conectar con Medigest" });
+      }
+
+      const raw = await response.json() as Array<{ result: { data: { json: Array<{
+        id: number; nombre: string; dosis: string; stockActual: number;
+        stockMinimo: number; precioCaja: string; unidadesPorEnvase: number;
+      }> } } }>;
+
+      const medicamentos = raw[0]?.result?.data?.json || [];
+
+      // Calcular niveles de stock
+      const criticos = medicamentos.filter((m) => m.stockActual < m.stockMinimo && m.stockActual > 0);
+      const sinStock = medicamentos.filter((m) => m.stockActual === 0);
+      const bajos = medicamentos.filter((m) => {
+        const ratio = m.stockActual / m.stockMinimo;
+        return m.stockActual >= m.stockMinimo && ratio < 1.5;
+      });
+
+      // Lista de compra: críticos + sin stock
+      const listaCompra = [...sinStock, ...criticos].map((m) => ({
+        nombre: m.nombre,
+        dosis: m.dosis,
+        stockActual: m.stockActual,
+        stockMinimo: m.stockMinimo,
+        precioCaja: parseFloat(m.precioCaja),
+        estado: m.stockActual === 0 ? "sin_stock" : "critico",
+      }));
+
+      // Coste total de reposición (1 caja por medicamento en lista)
+      const costeReposicion = listaCompra.reduce((sum, m) => sum + m.precioCaja, 0);
+
+      // Coste mensual estimado (precio unitario × unidades consumidas al mes)
+      const costeMensual = medicamentos.reduce((sum, m) => {
+        const precioUnitario = parseFloat(m.precioCaja) / m.unidadesPorEnvase;
+        return sum + precioUnitario * m.stockMinimo;
+      }, 0);
+
+      res.json({
+        totalMedicamentos: medicamentos.length,
+        stockCritico: criticos.length + sinStock.length,
+        stockBajo: bajos.length,
+        costeReposicion: Math.round(costeReposicion * 100) / 100,
+        costeMensual: Math.round(costeMensual * 100) / 100,
+        listaCompra,
+        ultimaActualizacion: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      console.error("[Medigest] Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",
