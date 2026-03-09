@@ -28,12 +28,12 @@ export default function Dashboard() {
         <div className="space-y-6">
           {/* Fila 1: Gastos (2/3) e Ingresos (1/3) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 flex flex-col gap-6">
               <ExpensesWidget />
-            </div>
-            <div className="lg:col-span-1 flex flex-col gap-6">
-              <IncomeWidget />
               <MedigestWidget />
+            </div>
+            <div className="lg:col-span-1">
+              <IncomeWidget />
             </div>
           </div>
 
