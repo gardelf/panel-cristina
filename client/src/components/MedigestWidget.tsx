@@ -69,8 +69,8 @@ export function MedigestWidget() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-semibold text-foreground">Medicación</span>
+          <Package className="w-5 h-5 text-muted-foreground" />
+          <span className="text-xl font-bold text-foreground">Medicación</span>
         </div>
         <a
           href="https://medigest-production.up.railway.app/stock"
