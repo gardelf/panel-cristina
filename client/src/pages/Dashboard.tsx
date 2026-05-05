@@ -4,7 +4,6 @@ import { ExpensesWidget } from "@/components/ExpensesWidget";
 import { IncomeWidget } from "@/components/IncomeWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { ClassesWidget } from "@/components/ClassesWidget";
-import { JotFormWidget } from "@/components/JotFormWidget";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
 import { 
@@ -83,8 +82,6 @@ export default function Dashboard() {
 
           {/* Fila 3: Sistema de Clases - ancho completo */}
           <ClassesWidget />
-          {/* Fila 4: Nuevas Altas JotForm - ancho completo */}
-          <JotFormWidget />
         </div>
       </main>
     </div>
