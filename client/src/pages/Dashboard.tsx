@@ -82,6 +82,14 @@ export default function Dashboard() {
 
           {/* Fila 3: Sistema de Clases - ancho completo */}
           <ClassesWidget />
+          {/* Fila 4: Nuevas Altas JotForm */}
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <iframe
+              src="https://jotform-cris-production.up.railway.app"
+              style={{ width: "100%", height: "500px", border: "none", display: "block" }}
+              title="Nuevas Altas JotForm"
+            />
+          </div>
         </div>
       </main>
     </div>
