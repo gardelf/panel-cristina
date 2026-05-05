@@ -1,42 +1,11 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { Widget } from "@/components/Widget";
 import { ExpensesWidget } from "@/components/ExpensesWidget";
 import { IncomeWidget } from "@/components/IncomeWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { ClassesWidget } from "@/components/ClassesWidget";
-import { Button } from "@/components/ui/button";
-import { getLoginUrl } from "@/const";
-import { 
-  TrendingDown, 
-  TrendingUp, 
-  Calendar,
-  LogOut,
-  Loader2
-} from "lucide-react";
-import { useLocation } from "wouter";
+import { JotFormWidget } from "@/components/JotFormWidget";
+import { MedigestWidget } from "@/components/MedigestWidget";
 
 export default function Dashboard() {
-  const { user, loading, isAuthenticated, logout } = useAuth();
-  const [, setLocation] = useLocation();
-
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = getLoginUrl();
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    window.location.href = getLoginUrl();
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
       {/* Header */}
@@ -48,18 +17,9 @@ export default function Dashboard() {
                 Panel de Control
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Bienvenida, {user?.name || "Cristina"}
+                Bienvenida, Cristina
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Cerrar sesión
-            </Button>
           </div>
         </div>
       </header>
@@ -82,13 +42,10 @@ export default function Dashboard() {
 
           {/* Fila 3: Sistema de Clases - ancho completo */}
           <ClassesWidget />
-          {/* Fila 4: Nuevas Altas JotForm */}
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <iframe
-              src="https://jotform-cris-production.up.railway.app"
-              style={{ width: "100%", height: "500px", border: "none", display: "block" }}
-              title="Nuevas Altas JotForm"
-            />
+          {/* Fila 4: JotForm y Medigest */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <JotFormWidget />
+            <MedigestWidget />
           </div>
         </div>
       </main>

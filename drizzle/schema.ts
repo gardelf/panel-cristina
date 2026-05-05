@@ -39,3 +39,13 @@ export const agenda = mysqlTable("agenda", {
 
 export type Agenda = typeof agenda.$inferSelect;
 export type InsertAgenda = typeof agenda.$inferInsert;
+/**
+ * Tabla para rastrear el estado de las respuestas de JotForm (cuáles se han visto)
+ */
+export const jotformState = mysqlTable("jotform_state", {
+  id: int("id").autoincrement().primaryKey(),
+  formId: varchar("formId", { length: 64 }).notNull().unique(),
+  lastSeenAt: varchar("lastSeenAt", { length: 32 }).notNull().default("2000-01-01 00:00:00"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type JotformState = typeof jotformState.$inferSelect;

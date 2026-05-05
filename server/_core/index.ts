@@ -103,6 +103,123 @@ async function startServer() {
     }
   });
   
+  // ─── JotForm endpoints ────────────────────────────────────────────────────
+  const JOTFORM_API_KEY = process.env.JOTFORM_API_KEY || "566c8a6ccae10b66bcabf52c26315828";
+  const JOTFORM_FORM_ID = "252823884959375";
+  const JOTFORM_BASE = "https://eu-api.jotform.com";
+
+  // GET /api/jotform/submissions
+  app.get("/api/jotform/submissions", async (req, res) => {
+    try {
+      const { getDb } = await import("../db");
+      const { jotformState } = await import("../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const url = `${JOTFORM_BASE}/form/${JOTFORM_FORM_ID}/submissions?apiKey=${JOTFORM_API_KEY}&limit=50&orderby=created_at&direction=DESC`;
+      const resp = await fetch(url);
+      const json = await resp.json() as any;
+      const submissions: any[] = json.content || [];
+      const db = await getDb();
+      let lastSeenAt = "2000-01-01 00:00:00";
+      if (db) {
+        const rows = await db.select().from(jotformState).where(eq(jotformState.formId, JOTFORM_FORM_ID)).limit(1);
+        if (rows.length > 0) lastSeenAt = rows[0].lastSeenAt;
+      }
+      const newCount = submissions.filter(s => s.created_at > lastSeenAt).length;
+      const mapped = submissions.map(s => {
+        const a = s.answers || {};
+        return {
+          id: s.id,
+          createdAt: s.created_at,
+          nombre: a["2"]?.answer || "",
+          apellidos: a["3"]?.answer || "",
+          email: a["7"]?.answer || "",
+          telefono: a["8"]?.answer || "",
+          genero: a["24"]?.answer || "",
+          localidad: a["12"]?.answer || "",
+          comoNosConocio: a["27"]?.answer || "",
+          urlTimp: a["51"]?.answer || a["50"]?.answer || "",
+          isNew: s.created_at > lastSeenAt,
+        };
+      });
+      res.json({ submissions: mapped, newCount, lastSeenAt });
+    } catch (error: any) {
+      console.error("[JotForm] Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // POST /api/jotform/mark-seen
+  app.post("/api/jotform/mark-seen", async (req, res) => {
+    try {
+      const { getDb } = await import("../db");
+      const { jotformState } = await import("../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const now = new Date().toISOString().replace("T", " ").substring(0, 19);
+      const db = await getDb();
+      if (db) {
+        const rows = await db.select().from(jotformState).where(eq(jotformState.formId, JOTFORM_FORM_ID)).limit(1);
+        if (rows.length > 0) {
+          await db.update(jotformState).set({ lastSeenAt: now }).where(eq(jotformState.formId, JOTFORM_FORM_ID));
+        } else {
+          await db.insert(jotformState).values({ formId: JOTFORM_FORM_ID, lastSeenAt: now });
+        }
+      }
+      res.json({ success: true, markedAt: now });
+    } catch (error: any) {
+      console.error("[JotForm] Error mark-seen:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Proxy endpoint para obtener datos de stock de Medigest
+  app.get("/api/medigest/stock", async (_req, res) => {
+    try {
+      const medigestUrl = process.env.MEDIGEST_URL || "https://medigest-production.up.railway.app";
+      const response = await fetch(
+        `${medigestUrl}/api/trpc/medicamentos.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D`
+      );
+      if (!response.ok) {
+        return res.status(502).json({ error: "Error al conectar con Medigest" });
+      }
+      const raw = await response.json() as Array<{ result: { data: { json: Array<{
+        id: number; nombre: string; dosis: string; stockActual: number;
+        stockMinimo: number; precioCaja: string; unidadesPorEnvase: number;
+      }> } } }>;
+      const medicamentos = raw[0]?.result?.data?.json || [];
+      const criticos = medicamentos.filter((m) => m.stockActual < m.stockMinimo && m.stockActual > 0);
+      const sinStock = medicamentos.filter((m) => m.stockActual === 0);
+      const bajos = medicamentos.filter((m) => {
+        const ratio = m.stockActual / m.stockMinimo;
+        return m.stockActual >= m.stockMinimo && ratio < 1.5;
+      });
+      const listaCompra = [...sinStock, ...criticos].map((m) => ({
+        nombre: m.nombre,
+        dosis: m.dosis,
+        stockActual: m.stockActual,
+        stockMinimo: m.stockMinimo,
+        precioCaja: parseFloat(m.precioCaja),
+        estado: m.stockActual === 0 ? "sin_stock" : "critico",
+      }));
+      const costeReposicion = listaCompra.reduce((sum, m) => sum + m.precioCaja, 0);
+      const costeMensual = medicamentos.reduce((sum, m) => {
+        const precioUnitario = parseFloat(m.precioCaja) / m.unidadesPorEnvase;
+        return sum + precioUnitario * m.stockMinimo;
+      }, 0);
+      res.json({
+        totalMedicamentos: medicamentos.length,
+        stockCritico: criticos.length + sinStock.length,
+        stockBajo: bajos.length,
+        costeReposicion: Math.round(costeReposicion * 100) / 100,
+        costeMensual: Math.round(costeMensual * 100) / 100,
+        listaCompra,
+        ultimaActualizacion: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      console.error("[Medigest] Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",
