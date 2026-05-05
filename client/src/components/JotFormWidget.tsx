@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Users, ExternalLink, RefreshCw, ChevronDown, ChevronUp, Link2 } from "lucide-react";
+import { Users, ExternalLink, RefreshCw, ChevronDown, ChevronUp, Link2, UserPlus, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 interface Submission {
   id: string;
@@ -21,12 +21,21 @@ interface JotFormData {
   lastSeenAt: string;
 }
 
+// Estado de alta por submission id
+type AltaStatus = "idle" | "loading" | "ok" | "error";
+
+// URL del servidor local Playwright
+const LOCAL_SERVER = "http://localhost:3000";
+
 export function JotFormWidget() {
   const [data, setData] = useState<JotFormData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [marking, setMarking] = useState(false);
+
+  // Estado de alta por alumna: { [submissionId]: { status, mensaje } }
+  const [altaStatus, setAltaStatus] = useState<Record<string, { status: AltaStatus; mensaje?: string }>>({});
 
   const fetchData = useCallback(() => {
     setLoading(true);
@@ -56,6 +65,54 @@ export function JotFormWidget() {
       await fetchData();
     } finally {
       setMarking(false);
+    }
+  };
+
+  // ── Alta en TIMP.pro via servidor local ──────────────────────────────────────
+  const altaEnTimp = async (s: Submission) => {
+    setAltaStatus((prev) => ({ ...prev, [s.id]: { status: "loading" } }));
+
+    try {
+      const res = await fetch(`${LOCAL_SERVER}/api/alta-timp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre:    s.nombre,
+          apellidos: s.apellidos,
+          email:     s.email,
+          telefono:  s.telefono,
+          genero:    s.genero,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (res.ok && json.ok) {
+        setAltaStatus((prev) => ({
+          ...prev,
+          [s.id]: { status: "ok", mensaje: `Alta completada · ${json.urlPerfil || ""}` },
+        }));
+        // Abrir el perfil en TIMP si se devuelve la URL
+        if (json.urlPerfil) {
+          window.open(json.urlPerfil, "_blank");
+        }
+      } else {
+        setAltaStatus((prev) => ({
+          ...prev,
+          [s.id]: { status: "error", mensaje: json.error || "Error desconocido" },
+        }));
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "No se pudo conectar con el servidor local";
+      setAltaStatus((prev) => ({
+        ...prev,
+        [s.id]: {
+          status: "error",
+          mensaje: msg.includes("Failed to fetch")
+            ? "Servidor local no disponible. Asegúrate de que localhost:3000 está corriendo."
+            : msg,
+        },
+      }));
     }
   };
 
@@ -156,63 +213,113 @@ export function JotFormWidget() {
             </tr>
           </thead>
           <tbody>
-            {(expanded ? data.submissions : data.submissions.slice(0, 5)).map((s, i) => (
-              <tr
-                key={s.id}
-                className={`border-b border-border last:border-0 transition-colors ${
-                  s.isNew
-                    ? "bg-green-50 dark:bg-green-950/20"
-                    : i % 2 === 0
-                    ? "bg-background"
-                    : "bg-muted/20"
-                }`}
-              >
-                <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                  <div className="flex items-center gap-1.5">
-                    {s.isNew && (
-                      <span className="inline-flex h-1.5 w-1.5 rounded-full bg-green-500 flex-shrink-0" />
+            {(expanded ? data.submissions : data.submissions.slice(0, 5)).map((s, i) => {
+              const sta = altaStatus[s.id];
+              return (
+                <tr
+                  key={s.id}
+                  className={`border-b border-border last:border-0 transition-colors ${
+                    s.isNew
+                      ? "bg-green-50 dark:bg-green-950/20"
+                      : i % 2 === 0
+                      ? "bg-background"
+                      : "bg-muted/20"
+                  }`}
+                >
+                  <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                    <div className="flex items-center gap-1.5">
+                      {s.isNew && (
+                        <span className="inline-flex h-1.5 w-1.5 rounded-full bg-green-500 flex-shrink-0" />
+                      )}
+                      {formatDate(s.createdAt)}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">
+                    {s.nombre} {s.apellidos}
+                  </td>
+                  <td className="px-3 py-2 text-muted-foreground text-xs">
+                    {s.email ? (
+                      <a href={`mailto:${s.email}`} className="hover:text-primary transition-colors">
+                        {s.email}
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground/50">—</span>
                     )}
-                    {formatDate(s.createdAt)}
-                  </div>
-                </td>
-                <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">
-                  {s.nombre} {s.apellidos}
-                </td>
-                <td className="px-3 py-2 text-muted-foreground text-xs">
-                  {s.email ? (
-                    <a href={`mailto:${s.email}`} className="hover:text-primary transition-colors">
-                      {s.email}
-                    </a>
-                  ) : (
-                    <span className="text-muted-foreground/50">—</span>
-                  )}
-                </td>
-                <td className="px-3 py-2 text-muted-foreground text-xs whitespace-nowrap">
-                  {s.telefono || <span className="text-muted-foreground/50">—</span>}
-                </td>
-                <td className="px-3 py-2 text-muted-foreground text-xs">
-                  {s.localidad || <span className="text-muted-foreground/50">—</span>}
-                </td>
-                <td className="px-3 py-2 text-muted-foreground text-xs">
-                  {s.comoNosConocio || <span className="text-muted-foreground/50">—</span>}
-                </td>
-                <td className="px-3 py-2 text-center">
-                  {s.urlTimp ? (
-                    <a
-                      href={s.urlTimp}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                    >
-                      <Link2 className="w-3 h-3" />
-                      Alta
-                    </a>
-                  ) : (
-                    <span className="text-muted-foreground/50 text-xs">—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-3 py-2 text-muted-foreground text-xs whitespace-nowrap">
+                    {s.telefono || <span className="text-muted-foreground/50">—</span>}
+                  </td>
+                  <td className="px-3 py-2 text-muted-foreground text-xs">
+                    {s.localidad || <span className="text-muted-foreground/50">—</span>}
+                  </td>
+                  <td className="px-3 py-2 text-muted-foreground text-xs">
+                    {s.comoNosConocio || <span className="text-muted-foreground/50">—</span>}
+                  </td>
+
+                  {/* ── Columna Alta TIMP ─────────────────────────────────── */}
+                  <td className="px-3 py-2 text-center">
+                    {sta?.status === "ok" ? (
+                      // Alta completada
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          Dada de alta
+                        </span>
+                        {s.urlTimp && (
+                          <a
+                            href={s.urlTimp}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-0.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+                          >
+                            <Link2 className="w-2.5 h-2.5" />
+                            Ver perfil
+                          </a>
+                        )}
+                      </div>
+                    ) : sta?.status === "error" ? (
+                      // Error
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="inline-flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                          <XCircle className="w-3.5 h-3.5" />
+                          Error
+                        </span>
+                        <span
+                          className="text-xs text-muted-foreground max-w-[120px] text-center leading-tight cursor-help"
+                          title={sta.mensaje}
+                        >
+                          {sta.mensaje && sta.mensaje.length > 40
+                            ? sta.mensaje.slice(0, 40) + "…"
+                            : sta.mensaje}
+                        </span>
+                        <button
+                          onClick={() => altaEnTimp(s)}
+                          className="text-xs text-primary hover:underline mt-0.5"
+                        >
+                          Reintentar
+                        </button>
+                      </div>
+                    ) : sta?.status === "loading" ? (
+                      // Cargando
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Dando de alta…
+                      </span>
+                    ) : (
+                      // Botón inicial
+                      <button
+                        onClick={() => altaEnTimp(s)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all shadow-sm"
+                        title={`Dar de alta a ${s.nombre} ${s.apellidos} en TIMP.pro`}
+                      >
+                        <UserPlus className="w-3 h-3" />
+                        Alta TIMP
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
