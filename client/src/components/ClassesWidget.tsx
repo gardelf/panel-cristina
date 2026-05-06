@@ -11,7 +11,7 @@ export function ClassesWidget() {
       externalLinkText="Abrir en Nueva Ventana"
       className="xl:col-span-3"
     >
-      <div className="w-full" style={{ height: '600px' }}>
+      <div className="w-full" style={{ height: 'calc(100vh - 220px)', minHeight: '700px' }}>
         <iframe
           src="http://localhost:3000"
           className="w-full h-full border-0 rounded-lg"
