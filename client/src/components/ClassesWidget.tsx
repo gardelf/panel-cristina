@@ -36,7 +36,6 @@ export function ClassesWidget() {
           src="http://localhost:3000"
           className="w-full h-full border-0 rounded-lg"
           title="Sistema de Gestión de Clases"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
           allow="clipboard-read; clipboard-write"
         />
       </div>
