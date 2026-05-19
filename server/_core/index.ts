@@ -103,6 +103,67 @@ async function startServer() {
     }
   });
   
+  // ─── Endpoint para atajo de iPhone ─────────────────────────────────────────
+  // POST /registrar-gasto — recibe { texto } y devuelve { success: "..." }
+  app.post("/registrar-gasto", async (req, res) => {
+    try {
+      const { texto } = req.body;
+      if (!texto) {
+        return res.status(400).json({ success: "Error: falta el campo 'texto'" });
+      }
+      const { getFireflyService } = await import("../firefly");
+      const { extraerDatosConIA, categorizarGasto } = await import("../expenseAI");
+      const firefly = getFireflyService();
+      if (!firefly.isEnabled()) {
+        return res.status(500).json({ success: "Error: Firefly III no configurado" });
+      }
+      console.log("[registrar-gasto] Procesando:", texto);
+      const extracted = await extraerDatosConIA(texto);
+      if (!extracted.monto || !extracted.descripcion) {
+        return res.status(400).json({ success: "No se pudo extraer monto y descripción del texto. Formato: '25 Mercadona'" });
+      }
+      if (extracted.tags.includes("Extraordinario") && !extracted.fecha) {
+        return res.status(400).json({ success: "Los gastos extraordinarios DEBEN incluir fecha. Ejemplo: '500 viaje extraordinario 15 marzo'" });
+      }
+      let categoria = extracted.categoria;
+      let metodo = "ai";
+      if (!categoria || categoria === "Otros") {
+        const result = categorizarGasto(extracted.descripcion);
+        categoria = result.categoria;
+        metodo = result.metodo;
+      }
+      const descripcionLower = extracted.descripcion.toLowerCase();
+      const esEstudio = descripcionLower.includes("estudio") ||
+                        descripcionLower.includes("trabajo") ||
+                        descripcionLower.includes("oficina") ||
+                        descripcionLower.includes("profesional");
+      const cuentaDestino = esEstudio ? "Estudio" : "Personales";
+      const tags = extracted.tags.includes("Extraordinario") ? ["Extraordinario"] : [];
+      const result = await firefly.createTransaction({
+        description: extracted.descripcion,
+        amount: extracted.monto,
+        date: extracted.fecha || undefined,
+        category: categoria,
+        sourceAccount: "Cash",
+        destinationAccount: cuentaDestino,
+        tags,
+      });
+      if (!result.success) {
+        throw new Error(result.error || "Error al crear transacción");
+      }
+      const mensaje = `✅ Registrado: ${extracted.monto}€ en ${categoria} (${cuentaDestino})${
+        extracted.fecha ? ` - Fecha: ${extracted.fecha}` : ""
+      }${
+        tags.length > 0 ? ` - Tags: ${tags.join(", ")}` : ""
+      }`;
+      console.log("[registrar-gasto] OK:", mensaje);
+      res.json({ success: mensaje });
+    } catch (error: any) {
+      console.error("[registrar-gasto] Error:", error);
+      res.status(500).json({ success: `Error: ${error.message}` });
+    }
+  });
+
   // ─── JotForm endpoints ────────────────────────────────────────────────────
   const JOTFORM_API_KEY = process.env.JOTFORM_API_KEY || "566c8a6ccae10b66bcabf52c26315828";
   const JOTFORM_FORM_ID = "252823884959375";
