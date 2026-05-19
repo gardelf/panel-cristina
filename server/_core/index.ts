@@ -103,6 +103,17 @@ async function startServer() {
     }
   });
   
+  // ─── Diagnóstico temporal ─────────────────────────────────────────────────
+  app.get("/debug-env", (_req, res) => {
+    res.json({
+      hasForgeApiKey: !!process.env.BUILT_IN_FORGE_API_KEY,
+      forgeApiKeyLength: (process.env.BUILT_IN_FORGE_API_KEY || "").length,
+      hasForgeApiUrl: !!process.env.BUILT_IN_FORGE_API_URL,
+      forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL || "(vacío)",
+      hasOpenAI: !!process.env.OPENAI_API_KEY,
+    });
+  });
+
   // ─── Endpoint para atajo de iPhone ─────────────────────────────────────────
   // POST /registrar-gasto — recibe { texto } y devuelve { success: "..." }
   app.post("/registrar-gasto", async (req, res) => {
