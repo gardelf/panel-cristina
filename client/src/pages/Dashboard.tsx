@@ -3,7 +3,6 @@ import { IncomeWidget } from "@/components/IncomeWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { ClassesWidget } from "@/components/ClassesWidget";
 import { JotFormWidget } from "@/components/JotFormWidget";
-import { MedigestWidget } from "@/components/MedigestWidget";
 
 export default function Dashboard() {
   return (
@@ -42,11 +41,9 @@ export default function Dashboard() {
 
           {/* Fila 3: Sistema de Clases - ancho completo */}
           <ClassesWidget />
-          {/* Fila 4: JotForm y Medigest */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <JotFormWidget />
-            <MedigestWidget />
-          </div>
+
+          {/* Fila 4: JotForm - ancho completo */}
+          <JotFormWidget />
         </div>
       </main>
     </div>
