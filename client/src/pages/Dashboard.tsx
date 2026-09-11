@@ -26,13 +26,13 @@ export default function Dashboard() {
       {/* Dashboard Content */}
       <main className="container py-8">
         <div className="space-y-6">
-          {/* Fila 1: Gastos (2/3) e Ingresos (1/3) */}
+          {/* Fila 1: Ingresos (1/3) y Gastos (2/3) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <ExpensesWidget />
-            </div>
             <div className="lg:col-span-1">
               <IncomeWidget />
+            </div>
+            <div className="lg:col-span-2">
+              <ExpensesWidget />
             </div>
           </div>
 
