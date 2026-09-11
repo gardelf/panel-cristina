@@ -1,6 +1,5 @@
 import { ExpensesWidget } from "@/components/ExpensesWidget";
 import { IncomeWidget } from "@/components/IncomeWidget";
-import { ClassesWidget } from "@/components/ClassesWidget";
 
 export default function Dashboard() {
   return (
@@ -33,9 +32,6 @@ export default function Dashboard() {
               <ExpensesWidget />
             </div>
           </div>
-
-          {/* Fila 2: Sistema de Clases - ancho completo */}
-          <ClassesWidget />
         </div>
       </main>
     </div>
