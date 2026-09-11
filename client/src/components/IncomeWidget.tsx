@@ -4,6 +4,8 @@ import { TrendingUp, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const MANUAL_EXPECTED_INCOME_THIS_MONTH = 260;
+
 export function IncomeWidget() {
   const { data, isLoading, error, refetch } = trpc.income.summary.useQuery(undefined, {
     refetchInterval: 5 * 60 * 1000, // Refetch cada 5 minutos
@@ -59,10 +61,10 @@ export function IncomeWidget() {
 
           <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
             <p className="text-sm text-muted-foreground mb-1">
-              Facturación prevista
+              Cobros previstos este mes
             </p>
             <p className="text-2xl font-semibold">
-              {formatCurrency(data.projectedIncome)}
+              {formatCurrency(MANUAL_EXPECTED_INCOME_THIS_MONTH)}
             </p>
           </div>
 
