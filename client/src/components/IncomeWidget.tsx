@@ -4,8 +4,6 @@ import { TrendingUp, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const MANUAL_EXPECTED_INCOME_THIS_MONTH = 260;
-
 export function IncomeWidget() {
   const { data, isLoading, error, refetch } = trpc.income.summary.useQuery(undefined, {
     refetchInterval: 5 * 60 * 1000, // Refetch cada 5 minutos
@@ -39,7 +37,7 @@ export function IncomeWidget() {
 
       {isLoading && (
         <div className="space-y-4">
-          {[1, 2, 3, 4].map((i) => (
+          {[1].map((i) => (
             <div key={i} className="p-4 rounded-lg bg-secondary/50">
               <Skeleton className="h-4 w-32 mb-2" />
               <Skeleton className="h-8 w-24" />
@@ -58,31 +56,6 @@ export function IncomeWidget() {
               </AlertDescription>
             </Alert>
           )}
-
-          <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-            <p className="text-sm text-muted-foreground mb-1">
-              Cobros previstos este mes
-            </p>
-            <p className="text-2xl font-semibold">
-              {formatCurrency(MANUAL_EXPECTED_INCOME_THIS_MONTH)}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-            <p className="text-sm text-muted-foreground mb-1">Ingresos a hoy</p>
-            <p className="text-2xl font-semibold">
-              {formatCurrency(data.currentIncome)}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-            <p className="text-sm text-muted-foreground mb-1">
-              Pendientes por cobrar
-            </p>
-            <p className="text-2xl font-semibold">
-              {formatCurrency(data.pendingIncome)}
-            </p>
-          </div>
 
           <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors">
             <p className="text-sm text-muted-foreground mb-1">
