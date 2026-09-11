@@ -2,6 +2,11 @@ import { ExpensesWidget } from "@/components/ExpensesWidget";
 import { IncomeWidget } from "@/components/IncomeWidget";
 
 export default function Dashboard() {
+  const currentMonth = new Intl.DateTimeFormat("es-ES", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
       {/* Header */}
@@ -10,7 +15,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                Panel de Control
+                MybalancePilates · {currentMonth}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Bienvenida, Cristina
