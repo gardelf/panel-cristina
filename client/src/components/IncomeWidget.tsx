@@ -37,7 +37,7 @@ export function IncomeWidget() {
 
       {isLoading && (
         <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="p-4 rounded-lg bg-secondary/50">
               <Skeleton className="h-4 w-32 mb-2" />
               <Skeleton className="h-8 w-24" />
@@ -56,6 +56,15 @@ export function IncomeWidget() {
               </AlertDescription>
             </Alert>
           )}
+
+          <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
+            <p className="text-sm text-muted-foreground mb-1">
+              Facturación prevista
+            </p>
+            <p className="text-2xl font-semibold">
+              {formatCurrency(data.projectedIncome)}
+            </p>
+          </div>
 
           <div className="p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
             <p className="text-sm text-muted-foreground mb-1">Ingresos a hoy</p>
