@@ -70,24 +70,20 @@ export function ExpensesWidget() {
       )}
 
       {isLoading && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="p-4 rounded-lg bg-secondary/50">
+        <div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="p-3 sm:p-4 rounded-lg bg-secondary/50">
                 <Skeleton className="h-4 w-20 mb-2" />
                 <Skeleton className="h-8 w-24" />
               </div>
             ))}
           </div>
-          <div className="p-4 rounded-lg bg-secondary/50">
-            <Skeleton className="h-4 w-48 mb-2" />
-            <Skeleton className="h-8 w-24" />
-          </div>
         </div>
       )}
 
       {!isLoading && data && (
-        <div className="space-y-4">
+        <div>
           {!data.enabled && (
             <Alert>
               <AlertCircle className="h-4 w-4" />
@@ -98,10 +94,10 @@ export function ExpensesWidget() {
           )}
 
           {/* Fila con Gastos del Estudio y Margen Estudio */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             {/* Sección de Gastos del Estudio */}
             {studioData && studioData.enabled && (
-              <div className="p-4 rounded-lg bg-accent/10 border border-accent/30">
+              <div className="p-3 sm:p-4 rounded-lg bg-accent/10 border border-accent/30">
                 <button
                   onClick={() => setIsStudioExpanded(!isStudioExpanded)}
                   className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
@@ -110,7 +106,7 @@ export function ExpensesWidget() {
                     <p className="text-sm text-muted-foreground mb-1">
                       Gastos del Estudio (este mes)
                     </p>
-                    <p className="text-2xl font-semibold text-accent-foreground">
+                    <p className="text-xl sm:text-2xl font-semibold text-accent-foreground">
                       {formatCurrency(studioData.total)}
                     </p>
                   </div>
@@ -170,7 +166,7 @@ export function ExpensesWidget() {
 
             {/* Sección de Margen Estudio */}
             {incomeData && studioData && (
-              <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+              <div className="p-3 sm:p-4 rounded-lg bg-green-500/10 border border-green-500/30">
                 <div className="flex items-center justify-between">
                   <div className="text-left">
                     <p className="text-sm text-muted-foreground mb-1">
@@ -179,11 +175,11 @@ export function ExpensesWidget() {
                     <p className="text-xs text-muted-foreground mb-2">
                       Ingresos previstos - Gastos Estudio
                     </p>
-                    <p className={`text-2xl font-semibold ${margenEstudio >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <p className={`text-xl sm:text-2xl font-semibold ${margenEstudio >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                       {formatCurrency(margenEstudio)}
                     </p>
                   </div>
-                  <TrendingUp className={`h-8 w-8 ${margenEstudio >= 0 ? 'text-green-500' : 'text-red-500'}`} />
+                  <TrendingUp className={`hidden sm:block h-8 w-8 ${margenEstudio >= 0 ? 'text-green-500' : 'text-red-500'}`} />
                 </div>
               </div>
             )}
