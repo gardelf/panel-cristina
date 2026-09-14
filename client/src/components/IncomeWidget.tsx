@@ -36,9 +36,9 @@ export function IncomeWidget() {
       )}
 
       {isLoading && (
-        <div className="space-y-4">
+        <div>
           {[1].map((i) => (
-            <div key={i} className="p-4 rounded-lg bg-secondary/50">
+            <div key={i} className="p-3 sm:p-4 rounded-lg bg-secondary/50">
               <Skeleton className="h-4 w-32 mb-2" />
               <Skeleton className="h-8 w-24" />
             </div>
@@ -47,7 +47,7 @@ export function IncomeWidget() {
       )}
 
       {!isLoading && data && (
-        <div className="space-y-4">
+        <div>
           {!data.enabled && (
             <Alert>
               <AlertCircle className="h-4 w-4" />
@@ -57,20 +57,14 @@ export function IncomeWidget() {
             </Alert>
           )}
 
-          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors">
+          <div className="p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors">
             <p className="text-sm text-muted-foreground mb-1">
               Ingresos previstos
             </p>
-            <p className="text-2xl font-semibold text-primary">
+            <p className="text-xl sm:text-2xl font-semibold text-primary">
               {formatCurrency(data.projectedIncome)}
             </p>
           </div>
-
-          {data.enabled && (
-            <div className="text-xs text-muted-foreground text-center py-2 border-t border-border">
-              Nota: La estructura de cálculo debe ajustarse según tu hoja de Google Sheets
-            </div>
-          )}
         </div>
       )}
     </Widget>
