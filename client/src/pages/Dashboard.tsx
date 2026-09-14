@@ -11,10 +11,10 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container py-4">
+        <div className="container py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                 MybalancePilates · {currentMonth}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
@@ -26,10 +26,10 @@ export default function Dashboard() {
       </header>
 
       {/* Dashboard Content */}
-      <main className="container py-8">
-        <div className="space-y-6">
+      <main className="container py-4 sm:py-8">
+        <div className="space-y-3 sm:space-y-6">
           {/* Fila 1: Ingresos (1/3) y Gastos (2/3) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
             <div className="lg:col-span-1">
               <IncomeWidget />
             </div>
