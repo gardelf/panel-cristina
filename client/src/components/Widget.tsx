@@ -28,11 +28,11 @@ export function Widget({
 }: WidgetProps) {
   return (
     <Card className={`widget-card ${className}`}>
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 p-4 pb-2 sm:p-6 sm:pb-4">
         <div className="space-y-1 flex-1">
           <div className="flex items-center gap-2">
             {icon && <div className="text-primary">{icon}</div>}
-            <CardTitle className="text-xl">{title}</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">{title}</CardTitle>
           </div>
           {description && (
             <CardDescription className="text-sm">{description}</CardDescription>
@@ -65,7 +65,7 @@ export function Widget({
           )}
         </div>
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">{children}</CardContent>
     </Card>
   );
 }
